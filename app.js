@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function updateMarketStatus() {
-
+buildWatchlist();
     const status = document.getElementById("marketStatus");
 
     const now = new Date();
