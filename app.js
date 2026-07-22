@@ -15,18 +15,25 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("lastScan").textContent =
             new Date().toLocaleTimeString();
 
-        const quote = await getQuote("NVDA");
+        const rows = document.querySelectorAll("#watchlistTable tr");
 
-        if (!quote) {
-            alert("API Error");
-            return;
-        }
+for (let i = 0; i < WATCHLIST.length; i++) {
 
-        const row = document.querySelector("#watchlistTable tr");
+    const symbol = WATCHLIST[i];
 
-        row.cells[1].textContent = "$" + quote.price.toFixed(2);
-        row.cells[2].textContent = quote.change.toFixed(2) + "%";
-        row.cells[3].textContent = "Live";
+    const quote = await getQuote(symbol);
+
+    if (!quote) continue;
+
+    rows[i].cells[1].textContent =
+        "$" + Number(quote.price).toFixed(2);
+
+    rows[i].cells[2].textContent =
+        Number(quote.change).toFixed(2) + "%";
+
+    rows[i].cells[3].textContent = "Live";
+
+}
 
     });
 
