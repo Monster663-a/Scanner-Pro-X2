@@ -1,3 +1,11 @@
+const WATCHLIST = [
+    "NVDA",
+    "TSLA",
+    "AAPL",
+    "AMD",
+    "META",
+    "AMZN"
+];
 document.addEventListener("DOMContentLoaded", () => {
 
     updateMarketStatus();
