@@ -48,3 +48,23 @@ buildWatchlist();
     }
 
 }
+function buildWatchlist() {
+
+    const table = document.getElementById("watchlistTable");
+
+    table.innerHTML = "";
+
+    WATCHLIST.forEach(symbol => {
+
+        table.innerHTML += `
+            <tr>
+                <td>${symbol}</td>
+                <td>--</td>
+                <td>--</td>
+                <td>Waiting...</td>
+            </tr>
+        `;
+
+    });
+
+}
