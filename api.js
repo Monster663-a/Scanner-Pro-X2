@@ -1,4 +1,4 @@
-const FINNHUB_API_KEY = "ضع مفتاح Finnhub هنا";
+const FINNHUB_API_KEY = "d9gj7g1r01qq6536hg2gd9gj7g1r01qq6536hg30";
 
 async function getQuote(symbol) {
     try {
