@@ -1,11 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
     updateMarketStatus();
 
-    document.getElementById("scanBtn").addEventListener("click", () => {
-        document.getElementById("lastScan").textContent =
-            new Date().toLocaleTimeString();
+    document.getElementById("scanBtn").addEventListener("click", async () => {
 
-        alert("Scan Started (Demo)");
+    document.getElementById("lastScan").textContent =
+        new Date().toLocaleTimeString();
+
+    const quote = await getQuote("NVDA");
+
+    if (!quote) {
+        alert("API Error");
+        return;
+    }
+
+    const row = document.querySelector("#watchlistTable tr");
+
+    row.cells[1].textContent = "$" + quote.price.toFixed(2);
+    row.cells[2].textContent = quote.change.toFixed(2) + "%";
+    row.cells[3].textContent = "Live";
+
+});
     });
 });
 
