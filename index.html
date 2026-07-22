@@ -1,129 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scanner Pro X</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Pro X</title>
 
-<style>
-body{
-    margin:0;
-    background:#0b0f14;
-    color:white;
-    font-family:Arial,Helvetica,sans-serif;
-}
-
-header{
-    background:#111827;
-    padding:20px;
-    text-align:center;
-    border-bottom:2px solid #22c55e;
-}
-
-h1{
-    margin:0;
-    color:#22c55e;
-}
-
-.container{
-    padding:20px;
-}
-
-.card{
-    background:#161b22;
-    border:1px solid #30363d;
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:20px;
-}
-
-button{
-    background:#22c55e;
-    color:black;
-    border:none;
-    padding:12px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-button:hover{
-    background:#16a34a;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    border-bottom:1px solid #30363d;
-    padding:12px;
-    text-align:left;
-}
-
-th{
-    color:#22c55e;
-}
-</style>
-
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
-<h1>Scanner Pro X</h1>
-<p>Professional Day Trading Scanner</p>
-</header>
+<div id="app">
 
-<div class="container">
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>Scanner Pro X</h1>
+        </div>
 
-<div class="card">
-<h2>Dashboard</h2>
+        <nav>
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Scanner</a>
+            <a href="#">Watchlist</a>
+            <a href="#">Top Gainers</a>
+            <a href="#">Top Losers</a>
+            <a href="#">News</a>
+            <a href="#">Settings</a>
+        </nav>
+    </aside>
 
-<p>✅ Project Started Successfully</p>
+    <main class="content">
 
-<button>
-Scan Now
-</button>
+        <header class="topbar">
+
+            <div>
+                <h2>Dashboard</h2>
+                <p>Professional Day Trading Scanner</p>
+            </div>
+
+            <button id="scanBtn">
+                Scan Now
+            </button>
+
+        </header>
+
+        <section class="cards">
+
+            <div class="card">
+                <h3>Market Status</h3>
+                <span id="marketStatus">
+                    Loading...
+                </span>
+            </div>
+
+            <div class="card">
+                <h3>Watchlist</h3>
+                <span>
+                    1 Symbol
+                </span>
+            </div>
+
+            <div class="card">
+                <h3>Last Scan</h3>
+                <span id="lastScan">
+                    Never
+                </span>
+            </div>
+
+        </section>
+
+        <section class="table-box">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Change %</th>
+                    <th>Status</th>
+                </tr>
+
+                </thead>
+
+                <tbody id="watchlistTable">
+
+                <tr>
+
+                    <td>NVDA</td>
+
+                    <td>--</td>
+
+                    <td>--</td>
+
+                    <td>Waiting...</td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
 
 </div>
 
-<div class="card">
-
-<h2>Watchlist</h2>
-
-<table>
-
-<tr>
-
-<th>Symbol</th>
-
-<th>Price</th>
-
-<th>Change %</th>
-
-<th>Status</th>
-
-</tr>
-
-<tr>
-
-<td>NVDA</td>
-
-<td>--</td>
-
-<td>--</td>
-
-<td>Waiting...</td>
-
-</tr>
-
-</table>
-
-</div>
-
-</div>
+<script src="app.js"></script>
+<script src="scanner.js"></script>
+<script src="api.js"></script>
+<script src="settings.js"></script>
 
 </body>
 </html>
