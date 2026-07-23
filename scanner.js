@@ -25,7 +25,7 @@ const minChange = Number(document.getElementById("minChange").value);
         for (const symbol of STOCKS) {
 
             const quote = await getQuote(symbol);
-
+const volume = await getVolume(symbol);
             if (!quote) continue;
 if (quote.price < minPrice) continue;
 
