@@ -27,7 +27,11 @@ if (runScannerBtn) {
             const quote = await getQuote(symbol);
 
             if (!quote) continue;
+if (quote.price < minPrice) continue;
 
+if (quote.price > maxPrice) continue;
+
+if (Math.abs(quote.change) < minChange) continue;
             const row = `
             <tr>
                 <td>${symbol}</td>
