@@ -1,10 +1,13 @@
 const STOCKS = [
-    "NVDA",
-    "TSLA",
-    "AAPL",
-    "AMD",
-    "META",
-    "AMZN"
+
+"NVDA","TSLA","AAPL","AMD","META","AMZN",
+"MSFT","GOOGL","NFLX","PLTR","SMCI","AVGO",
+"MU","CRM","ORCL","INTC","QCOM","ARM",
+"CRWD","PANW","SNOW","SHOP","UBER","COIN",
+"RBLX","IONQ","QBTS","RKLB","ASTS","LUNR",
+"TEM","HIMS","SOUN","SOFI","HOOD","CAVA",
+"CELH","RDDT","TTD","APP","NET","DDOG"
+
 ];
 
 const runScannerBtn = document.getElementById("runScanner");
