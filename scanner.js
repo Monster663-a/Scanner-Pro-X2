@@ -26,6 +26,7 @@ const minChange = Number(document.getElementById("minChange").value);
 
             const quote = await getQuote(symbol);
 const volume = await getVolume(symbol);
+            console.log(symbol, volume);
             if (!quote) continue;
 if (quote.price < minPrice) continue;
 
