@@ -75,3 +75,14 @@ function buildWatchlist() {
     });
 
 }
+const scannerMenu = document.getElementById("scannerMenu");
+
+scannerMenu.addEventListener("click", (e) => {
+
+    e.preventDefault();
+
+    document.getElementById("dashboardPage").style.display = "none";
+
+    document.getElementById("scannerPage").style.display = "block";
+
+});
