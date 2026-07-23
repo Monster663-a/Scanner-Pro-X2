@@ -1,5 +1,5 @@
 const STOCKS = [
-
+let scannerData = [];
 "NVDA","TSLA","AAPL","AMD","META","AMZN",
 "MSFT","GOOGL","NFLX","PLTR","SMCI","AVGO",
 "MU","CRM","ORCL","INTC","QCOM","ARM",
@@ -21,9 +21,22 @@ const minPrice = Number(document.getElementById("minPrice").value);
 const maxPrice = Number(document.getElementById("maxPrice").value);
 const minChange = Number(document.getElementById("minChange").value);
         tbody.innerHTML = "";
-
+scannerData = [];
         for (const symbol of STOCKS) {
+scannerData.sort((a, b) => b.change - a.change);
 
+scannerData.forEach(stock => {
+
+    tbody.innerHTML += `
+    <tr>
+        <td>${stock.symbol}</td>
+        <td>$${stock.price}</td>
+        <td>${stock.change.toFixed(2)}%</td>
+        <td>${stock.change > 0 ? "🟢 Bullish" : "🔴 Bearish"}</td>
+    </tr>
+    `;
+
+});
             const quote = await getQuote(symbol);
 const volume = await getVolume(symbol);
             console.log(symbol, volume);
@@ -34,17 +47,11 @@ if (quote.price > maxPrice) continue;
 
 if (Math.abs(quote.change) < minChange) continue;
             if (volume.volume < minVolume) continue;
-            const row = `
-            <tr>
-                <td>${symbol}</td>
-                <td>$${quote.price}</td>
-                <td>${quote.change.toFixed(2)}%</td>
-                <td>${quote.change > 0 ? "🟢 Bullish" : "🔴 Bearish"}</td>
-            </tr>
-            `;
-
-            tbody.innerHTML += row;
-
+           scannerData.push({
+    symbol,
+    price: quote.price,
+    change: quote.change
+});
         }
 
     });
