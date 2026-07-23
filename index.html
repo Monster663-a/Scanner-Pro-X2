@@ -28,7 +28,63 @@
         </nav>
     </aside>
 
-    <main class="content">
+<section id="scannerPage" style="display:none;">
+
+<div class="card">
+
+<h2>Scanner Filters</h2>
+
+<div class="filters">
+
+<label>Minimum Price</label>
+<input id="minPrice" type="number" value="5">
+
+<label>Maximum Price</label>
+<input id="maxPrice" type="number" value="100">
+
+<label>Minimum Change %</label>
+<input id="minChange" type="number" value="2">
+
+<label>Minimum Volume</label>
+<input id="minVolume" type="number" value="500000">
+
+<button id="runScanner">
+Scan Stocks
+</button>
+
+</div>
+
+</div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Symbol</th>
+
+<th>Price</th>
+
+<th>Change %</th>
+
+<th>Result</th>
+
+</tr>
+
+</thead>
+
+<tbody id="scannerResults">
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
 
         <header class="topbar">
 
