@@ -11,7 +11,9 @@ const STOCKS = [
 ];
 
 const runScannerBtn = document.getElementById("runScanner");
-
+const minPrice = Number(document.getElementById("minPrice").value);
+const maxPrice = Number(document.getElementById("maxPrice").value);
+const minChange = Number(document.getElementById("minChange").value);
 if (runScannerBtn) {
 
     runScannerBtn.addEventListener("click", async () => {
