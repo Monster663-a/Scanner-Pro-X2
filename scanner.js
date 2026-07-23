@@ -32,6 +32,7 @@ if (quote.price < minPrice) continue;
 if (quote.price > maxPrice) continue;
 
 if (Math.abs(quote.change) < minChange) continue;
+            if (volume.volume < minVolume) continue;
             const row = `
             <tr>
                 <td>${symbol}</td>
