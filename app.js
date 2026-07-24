@@ -86,3 +86,31 @@ scannerMenu.addEventListener("click", (e) => {
     document.getElementById("scannerPage").style.display = "block";
 
 });
+// التنقل بين الصفحات
+
+const dashboardLink = document.querySelector(".sidebar a.active");
+const hotStocksMenu = document.getElementById("hotStocksMenu");
+
+dashboardLink.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    document.getElementById("dashboardPage").style.display = "block";
+    document.getElementById("scannerPage").style.display = "none";
+    document.getElementById("hotStocksPage").style.display = "none";
+});
+
+scannerMenu.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    document.getElementById("dashboardPage").style.display = "none";
+    document.getElementById("scannerPage").style.display = "block";
+    document.getElementById("hotStocksPage").style.display = "none";
+});
+
+hotStocksMenu.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    document.getElementById("dashboardPage").style.display = "none";
+    document.getElementById("scannerPage").style.display = "none";
+    document.getElementById("hotStocksPage").style.display = "block";
+});
