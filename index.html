@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Scanner Pro X</title>
 
 <link rel="stylesheet" href="style.css">
@@ -22,11 +25,19 @@
 <nav>
 
 <a href="#" class="active">Dashboard</a>
+
 <a href="#" id="scannerMenu">Scanner</a>
+
+<a href="#" id="hotStocksMenu">🔥 Hot Stocks</a>
+
 <a href="#">Watchlist</a>
+
 <a href="#">Top Gainers</a>
+
 <a href="#">Top Losers</a>
+
 <a href="#">News</a>
+
 <a href="#">Settings</a>
 
 </nav>
@@ -40,12 +51,17 @@
 <header class="topbar">
 
 <div>
+
 <h2>Dashboard</h2>
+
 <p>Professional Day Trading Scanner</p>
+
 </div>
 
 <button id="scanBtn">
+
 Scan Now
+
 </button>
 
 </header>
@@ -53,18 +69,39 @@ Scan Now
 <section class="cards">
 
 <div class="card">
+
 <h3>Market Status</h3>
-<span id="marketStatus">Loading...</span>
+
+<span id="marketStatus">
+
+Loading...
+
+</span>
+
 </div>
 
 <div class="card">
+
 <h3>Watchlist</h3>
-<span>6 Symbols</span>
+
+<span>
+
+6 Symbols
+
+</span>
+
 </div>
 
 <div class="card">
+
 <h3>Last Scan</h3>
-<span id="lastScan">Never</span>
+
+<span id="lastScan">
+
+Never
+
+</span>
+
 </div>
 
 </section>
@@ -76,16 +113,21 @@ Scan Now
 <thead>
 
 <tr>
+
 <th>Symbol</th>
+
 <th>Price</th>
+
 <th>Change %</th>
+
 <th>Status</th>
+
 </tr>
 
 </thead>
 
 <tbody id="watchlistTable">
-</tbody>
+    </tbody>
 
 </table>
 
@@ -102,25 +144,37 @@ Scan Now
 <div class="filters">
 
 <label>Minimum Price</label>
-<input id="minPrice" type="number" value="5">
-
-<label>Maximum Price</label>
-<input id="maxPrice" type="number" value="100">
-
-<label>Minimum Change %</label>
-<input id="minChange" type="number" value="2">
-
-<label>Minimum Volume</label>
-<input id="minVolume" type="number" value="500000">
-
-<button id="runScanner">
-    <label>Search Symbol</label>
 
 <input
-    id="searchSymbol"
-    type="text"
-    placeholder="مثال: NVDA أو TSLA">
+id="minPrice"
+type="number"
+value="5">
+
+<label>Maximum Price</label>
+
+<input
+id="maxPrice"
+type="number"
+value="100">
+
+<label>Minimum Change %</label>
+
+<input
+id="minChange"
+type="number"
+value="2">
+
+<label>Search Symbol</label>
+
+<input
+id="searchSymbol"
+type="text"
+placeholder="مثال: NVDA أو TSLA">
+
+<button id="runScanner">
+
 Scan Stocks
+
 </button>
 
 </div>
@@ -134,10 +188,15 @@ Scan Stocks
 <thead>
 
 <tr>
+
 <th>Symbol</th>
+
 <th>Price</th>
+
 <th>Change %</th>
+
 <th>Result</th>
+
 </tr>
 
 </thead>
@@ -151,6 +210,40 @@ Scan Stocks
 
 </section>
 
+<section id="hotStocksPage" style="display:none;">
+
+<div class="card">
+
+<h2>🔥 Hot Stocks Today</h2>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Symbol</th>
+<th>Price</th>
+<th>Change %</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="hotStocksTable">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
 </main>
 
 </div>
@@ -158,5 +251,7 @@ Scan Stocks
 <script src="api.js"></script>
 <script src="app.js"></script>
 <script src="scanner.js"></script>
+
 </body>
+
 </html>
