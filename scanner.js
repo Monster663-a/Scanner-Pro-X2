@@ -23,6 +23,9 @@ const minChange = Number(document.getElementById("minChange").value);
         tbody.innerHTML = "";
 scannerData = [];
         for (const symbol of STOCKS) {
+            if (searchSymbol && symbol !== searchSymbol) {
+    continue;
+}
 scannerData.sort((a, b) => b.change - a.change);
 
 scannerData.forEach(stock => {
