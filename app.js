@@ -107,10 +107,16 @@ scannerMenu.addEventListener("click", (e) => {
     document.getElementById("hotStocksPage").style.display = "none";
 });
 
-hotStocksMenu.addEventListener("click", (e) => {
+hotStocksMenu.addEventListener("click", async (e) => {
+
     e.preventDefault();
 
     document.getElementById("dashboardPage").style.display = "none";
+
     document.getElementById("scannerPage").style.display = "none";
+
     document.getElementById("hotStocksPage").style.display = "block";
+
+    await loadHotStocks();
+
 });
