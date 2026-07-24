@@ -78,3 +78,49 @@ tbody.innerHTML += `
 });
 
 }
+// ===============================
+// Hot Stocks
+// ===============================
+
+async function loadHotStocks() {
+
+    const table = document.getElementById("hotStocksTable");
+
+    if (!table) return;
+
+    table.innerHTML = "";
+
+    let hotStocks = [];
+
+    for (const symbol of STOCKS) {
+
+        const quote = await getQuote(symbol);
+
+        if (!quote) continue;
+
+        hotStocks.push({
+            symbol: symbol,
+            price: quote.price,
+            change: quote.change
+        });
+
+    }
+
+    hotStocks.sort((a, b) => b.change - a.change);
+
+    hotStocks = hotStocks.slice(0, 10);
+
+    hotStocks.forEach(stock => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td>${stock.change.toFixed(2)}%</td>
+            <td>🔥 Hot</td>
+        </tr>
+        `;
+
+    });
+
+}
