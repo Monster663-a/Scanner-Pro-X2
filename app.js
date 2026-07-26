@@ -1,223 +1,226 @@
-// ===============================
+// =====================================
+// Scanner Pro X v3
+// =====================================
+
+// ================================
 // Watchlist
-// ===============================
+// ================================
 
 const WATCHLIST = [
 
-"NVDA",
-"TSLA",
-"AAPL",
-"AMD",
-"META",
-"PLTR"
+    "NVDA",
+    "AAPL",
+    "MSFT",
+    "TSLA",
+    "AMD",
+    "META"
 
 ];
 
-// ===============================
+// ================================
 // Pages
-// ===============================
+// ================================
 
-const dashboardPage = document.getElementById("dashboardPage");
-const scannerPage = document.getElementById("scannerPage");
-const hotStocksPage = document.getElementById("hotStocksPage");
-const momentumPage = document.getElementById("momentumPage");
-const riskPage = document.getElementById("riskPage");
-const gainersPage = document.getElementById("gainersPage");
-const losersPage = document.getElementById("losersPage");
-const newsPage = document.getElementById("newsPage");
+const pages = {
 
-// ===============================
-// Menus
-// ===============================
+    dashboard: document.getElementById("dashboardPage"),
+    scanner: document.getElementById("scannerPage"),
+    hotStocks: document.getElementById("hotStocksPage"),
+    momentum: document.getElementById("momentumPage"),
+    gainers: document.getElementById("gainersPage"),
+    losers: document.getElementById("losersPage"),
+    news: document.getElementById("newsPage"),
+    risk: document.getElementById("riskPage"),
+    settings: document.getElementById("settingsPage")
 
-const dashboardMenu = document.getElementById("dashboardMenu");
-const scannerMenu = document.getElementById("scannerMenu");
-const hotStocksMenu = document.getElementById("hotStocksMenu");
-const momentumMenu = document.getElementById("momentumMenu");
-const riskMenu = document.getElementById("riskMenu");
-const gainersMenu = document.getElementById("gainersMenu");
-const losersMenu = document.getElementById("losersMenu");
-const newsMenu = document.getElementById("newsMenu");
+};
 
-// ===============================
+// ================================
+// Menu Buttons
+// ================================
+
+const menu = {
+
+    dashboard: document.getElementById("dashboardMenu"),
+    scanner: document.getElementById("scannerMenu"),
+    hotStocks: document.getElementById("hotStocksMenu"),
+    momentum: document.getElementById("momentumMenu"),
+    gainers: document.getElementById("gainersMenu"),
+    losers: document.getElementById("losersMenu"),
+    news: document.getElementById("newsMenu"),
+    risk: document.getElementById("riskMenu"),
+    settings: document.getElementById("settingsMenu")
+
+};
+
+// ================================
 // DOM Ready
-// ===============================
+// ================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
+
+    initNavigation();
 
     buildWatchlist();
 
-    updateWatchlist();
-
     updateMarketStatus();
 
-    const scanBtn = document.getElementById("scanBtn");
-
-    if(scanBtn){
-
-        scanBtn.addEventListener("click", () => {
-
-            updateWatchlist();
-
-        });
-
-    }
+    updateWatchlist();
 
 });
-// ===============================
-// Hide All Pages
-// ===============================
+// =====================================
+// Navigation
+// =====================================
 
 function hideAllPages(){
 
-    dashboardPage.style.display = "none";
-    scannerPage.style.display = "none";
-    hotStocksPage.style.display = "none";
-    momentumPage.style.display = "none";
-    riskPage.style.display = "none";
-    gainersPage.style.display = "none";
-    losersPage.style.display = "none";
-    newsPage.style.display = "none";
+    Object.values(pages).forEach(page=>{
 
-}
+        if(page){
 
-// ===============================
-// Remove Active Menu
-// ===============================
+            page.style.display="none";
 
-function clearMenu(){
-
-    document.querySelectorAll(".sidebar nav a").forEach(item=>{
-
-        item.classList.remove("active");
+        }
 
     });
 
 }
 
-// ===============================
-// Show Page
-// ===============================
+function clearActiveMenu(){
 
-function showPage(page,menu){
+    Object.values(menu).forEach(item=>{
 
-    hideAllPages();
+        if(item){
 
-    clearMenu();
+            item.classList.remove("active");
 
-    page.style.display="block";
+        }
 
-    menu.classList.add("active");
+    });
 
 }
 
-// ===============================
-// Navigation
-// ===============================
+function showPage(pageName){
 
-dashboardMenu.onclick=()=>{
+    hideAllPages();
 
-    showPage(dashboardPage,dashboardMenu);
+    clearActiveMenu();
 
-};
+    if(pages[pageName]){
 
-scannerMenu.onclick=()=>{
-
-    showPage(scannerPage,scannerMenu);
-
-};
-
-hotStocksMenu.onclick=()=>{
-
-    showPage(hotStocksPage,hotStocksMenu);
-
-    if(typeof loadHotStocks==="function"){
-
-        loadHotStocks();
+        pages[pageName].style.display="block";
 
     }
 
-};
+    if(menu[pageName]){
 
-momentumMenu.onclick=()=>{
-
-    showPage(momentumPage,momentumMenu);
-
-    if(typeof loadMomentum==="function"){
-
-        loadMomentum();
+        menu[pageName].classList.add("active");
 
     }
 
-};
+    switch(pageName){
 
-riskMenu.onclick=()=>{
+        case "hotStocks":
 
-    showPage(riskPage,riskMenu);
+            if(typeof loadHotStocks==="function"){
 
-};
+                loadHotStocks();
 
-gainersMenu.onclick=()=>{
+            }
 
-    showPage(gainersPage,gainersMenu);
+        break;
 
-    if(typeof loadGainers==="function"){
+        case "momentum":
 
-        loadGainers();
+            if(typeof loadMomentum==="function"){
+
+                loadMomentum();
+
+            }
+
+        break;
+
+        case "gainers":
+
+            if(typeof loadGainers==="function"){
+
+                loadGainers();
+
+            }
+
+        break;
+
+        case "losers":
+
+            if(typeof loadLosers==="function"){
+
+                loadLosers();
+
+            }
+
+        break;
+
+        case "news":
+
+            if(typeof loadNews==="function"){
+
+                loadNews();
+
+            }
+
+        break;
 
     }
 
-};
+}
 
-losersMenu.onclick=()=>{
+function initNavigation(){
 
-    showPage(losersPage,losersMenu);
+    menu.dashboard.onclick=()=>showPage("dashboard");
 
-    if(typeof loadLosers==="function"){
+    menu.scanner.onclick=()=>showPage("scanner");
 
-        loadLosers();
+    menu.hotStocks.onclick=()=>showPage("hotStocks");
 
-    }
+    menu.momentum.onclick=()=>showPage("momentum");
 
-};
+    menu.gainers.onclick=()=>showPage("gainers");
 
-newsMenu.onclick=()=>{
+    menu.losers.onclick=()=>showPage("losers");
 
-    showPage(newsPage,newsMenu);
+    menu.news.onclick=()=>showPage("news");
 
-    if(typeof loadNews==="function"){
+    menu.risk.onclick=()=>showPage("risk");
 
-        loadNews();
+    menu.settings.onclick=()=>showPage("settings");
 
-    }
+    showPage("dashboard");
 
-};
-
-// ===============================
-// Default Page
-// ===============================
-
-showPage(dashboardPage,dashboardMenu);
-// ===============================
+}
+// =====================================
 // Dashboard
-// ===============================
+// =====================================
 
 function buildWatchlist(){
 
-    const table = document.getElementById("watchlistBody");
+    const tbody = document.getElementById("watchlistBody");
 
-    if(!table) return;
+    if(!tbody){
 
-    table.innerHTML="";
+        return;
+
+    }
+
+    tbody.innerHTML = "";
 
     WATCHLIST.forEach(symbol=>{
 
-        table.innerHTML += `
+        tbody.innerHTML += `
         <tr>
             <td>${symbol}</td>
-            <td id="${symbol}_price">-</td>
-            <td id="${symbol}_change">-</td>
-            <td id="${symbol}_signal">Loading...</td>
+            <td id="${symbol}_price">--</td>
+            <td id="${symbol}_change">--</td>
+            <td id="${symbol}_signal" class="watch">Loading...</td>
         </tr>
         `;
 
@@ -225,101 +228,240 @@ function buildWatchlist(){
 
 }
 
-// ===============================
+// =====================================
 // Update Watchlist
-// ===============================
+// =====================================
 
 async function updateWatchlist(){
 
     for(const symbol of WATCHLIST){
 
-        try{
+        const quote = await getQuote(symbol);
 
-            const quote = await getQuote(symbol);
+        if(!quote){
 
-            if(!quote) continue;
-
-            const price = Number(quote.c).toFixed(2);
-
-            const change = Number(quote.dp).toFixed(2);
-
-            let signal="Watch";
-            let css="watch";
-
-            if(change>=3){
-
-                signal="Strong Buy";
-                css="strong-buy";
-
-            }else if(change>=1){
-
-                signal="Bullish";
-                css="bullish";
-
-            }else if(change<=-3){
-
-                signal="Avoid";
-                css="avoid";
-
-            }else if(change<0){
-
-                signal="Bearish";
-                css="bearish";
-
-            }
-
-            document.getElementById(symbol+"_price").textContent="$"+price;
-
-            document.getElementById(symbol+"_change").textContent=change+"%";
-
-            const signalCell=document.getElementById(symbol+"_signal");
-
-            signalCell.textContent=signal;
-
-            signalCell.className=css;
-
-        }catch(err){
-
-            console.error(symbol,err);
+            continue;
 
         }
 
+        const price = Number(quote.c);
+
+        const change = Number(quote.dp);
+
+        const history = await getHistory(symbol,"1day",5);
+
+        const momentum = calculateMomentum(history);
+
+        const signal = buildSignal(change,momentum);
+
+        document.getElementById(symbol+"_price").textContent =
+            "$" + price.toFixed(2);
+
+        document.getElementById(symbol+"_change").textContent =
+            change.toFixed(2) + "%";
+
+        const signalCell = document.getElementById(symbol+"_signal");
+
+        signalCell.textContent = signal.text;
+
+        signalCell.className = signal.className;
+
     }
 
 }
 
-// ===============================
+// =====================================
 // Market Status
-// ===============================
+// =====================================
 
 function updateMarketStatus(){
 
-    const market=document.getElementById("marketStatus");
+    const status = document.getElementById("marketStatus");
 
-    if(!market) return;
+    if(!status){
 
-    const now=new Date();
+        return;
 
-    const hour=now.getUTCHours();
+    }
 
-    if(hour>=13 && hour<20){
+    const now = new Date();
 
-        market.textContent="🟢 US Market Open";
+    const hour = now.getUTCHours();
+
+    if(hour >= 13 && hour < 20){
+
+        status.textContent = "🟢 US Market Open";
 
     }else{
 
-        market.textContent="🔴 US Market Closed";
+        status.textContent = "🔴 US Market Closed";
 
     }
 
 }
+// =====================================
+// Position Size Calculator
+// =====================================
 
-// ===============================
+function calculatePositionSize(){
+
+    const account = Number(document.getElementById("accountSize").value);
+
+    const riskPercent = Number(document.getElementById("riskPercent").value);
+
+    const entry = Number(document.getElementById("entryPrice").value);
+
+    const stop = Number(document.getElementById("stopPrice").value);
+
+    if(
+        !account ||
+        !riskPercent ||
+        !entry ||
+        !stop ||
+        entry === stop
+    ){
+        return;
+    }
+
+    const maxRisk = account * (riskPercent / 100);
+
+    const riskPerShare = Math.abs(entry - stop);
+
+    const shares = Math.floor(maxRisk / riskPerShare);
+
+    document.getElementById("maxRisk").textContent =
+        "$" + maxRisk.toFixed(2);
+
+    document.getElementById("shareSize").textContent =
+        shares.toLocaleString();
+
+}
+
+// =====================================
+// Buttons
+// =====================================
+
+const riskButton = document.getElementById("calculateRisk");
+
+if(riskButton){
+
+    riskButton.addEventListener("click",calculatePositionSize);
+
+}
+
+const refreshButton = document.getElementById("refreshDashboard");
+
+if(refreshButton){
+
+    refreshButton.addEventListener("click",async()=>{
+
+        await updateWatchlist();
+
+    });
+
+}
+
+// =====================================
+// Dashboard Cards
+// =====================================
+
+function updateDashboardCards(){
+
+    document.getElementById("stocksScanned").textContent =
+        WATCHLIST.length;
+
+    document.getElementById("marketTrend").textContent =
+        "Live";
+
+    document.getElementById("hotStocksCount").textContent =
+        "--";
+
+    document.getElementById("momentumCount").textContent =
+        "--";
+
+}
+
+// =====================================
 // Auto Refresh
-// ===============================
+// =====================================
 
-setInterval(()=>{
+setInterval(async()=>{
+
+    await updateWatchlist();
+
+    updateDashboardCards();
+
+},60000);
+
+updateDashboardCards();
+// =====================================
+// News
+// =====================================
+
+async function loadNews(){
+
+    const tbody = document.getElementById("newsBody");
+
+    if(!tbody){
+
+        return;
+
+    }
+
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const news = await getNews("AAPL");
+
+    tbody.innerHTML = "";
+
+    if(!news || news.length===0){
+
+        tbody.innerHTML =
+        "<tr><td colspan='4'>No news found.</td></tr>";
+
+        return;
+
+    }
+
+    news.slice(0,10).forEach(item=>{
+
+        const date = new Date(item.datetime * 1000);
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${date.toLocaleDateString()}</td>
+            <td>AAPL</td>
+            <td>${item.headline}</td>
+            <td>${item.source}</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+// =====================================
+// Refresh News Button
+// =====================================
+
+const refreshNewsButton = document.getElementById("refreshNews");
+
+if(refreshNewsButton){
+
+    refreshNewsButton.addEventListener("click",loadNews);
+
+}
+
+// =====================================
+// Startup
+// =====================================
+
+window.addEventListener("load",()=>{
+
+    updateDashboardCards();
+
+    updateMarketStatus();
 
     updateWatchlist();
 
-},60000);
+});
