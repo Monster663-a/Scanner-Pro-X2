@@ -14,7 +14,7 @@ const WATCHLIST = [
     "TSLA",
     "AMD",
     "META"
-
+    "MRVL"
 ];
 
 // ================================
