@@ -479,3 +479,71 @@ setInterval(()=>{
 },60000);
 
 console.log("✅ Scanner Pro X v3 Loaded");
+// =====================================
+// تحليل أفضل وقت للدخول
+// =====================================
+
+function getEntrySignal(score, change){
+
+    if(score >= 90 && change < 8){
+
+        return{
+            text:"🟢 شراء قوي الآن",
+            color:"strong-buy"
+        };
+
+    }
+
+    if(score >= 75 && change < 12){
+
+        return{
+            text:"🟢 دخول مناسب",
+            color:"bullish"
+        };
+
+    }
+
+    if(score >= 60){
+
+        return{
+            text:"🟡 راقب السهم",
+            color:"watch"
+        };
+
+    }
+
+    return{
+
+        text:"🔴 لا تدخل",
+        color:"avoid"
+
+    };
+
+}
+
+// =====================================
+// تقدير بداية الزخم
+// =====================================
+
+function estimateMomentumStart(){
+
+    const now = new Date();
+
+    const h = now.getHours();
+
+    const m = now.getMinutes();
+
+    const start = new Date();
+
+    start.setHours(h);
+
+    start.setMinutes(m-15);
+
+    return start.toLocaleTimeString([],{
+
+        hour:"2-digit",
+        minute:"2-digit"
+
+    });
+
+}
