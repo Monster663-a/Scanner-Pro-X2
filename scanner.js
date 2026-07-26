@@ -15,9 +15,9 @@ const STOCKS = [
 "META",
 "TSLA",
 "AMD",
-"COHR",
+
 "AVGO",
-"SNDK",
+
 "GOOGL",
 "ORCL",
 "CRM",
@@ -34,13 +34,13 @@ const STOCKS = [
 "TSM",
 "QCOM",
 "INTC",
-"WDC",
+
 "RDDT",
 "HIMS",
 "HOOD",
 "RKLB",
 "ASTS",
-"DELL",
+
 "APP",
 "IONQ",
 "QBTS",
@@ -50,7 +50,19 @@ const STOCKS = [
 "CAVA",
 "CELH",
 "DDOG"
-
+"COHR",
+"SNDK",
+"WDC",
+"DELL",
+"IBM",
+"SPCX",
+"AMKR",
+"SKHY",
+"FN",
+"VRT",
+"ASML",
+"BE",
+"AUR",
 ];
 
 // ================================
