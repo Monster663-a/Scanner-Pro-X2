@@ -124,3 +124,68 @@ async function loadHotStocks() {
     });
 
 }
+// ===============================
+// Momentum Scanner
+// ===============================
+
+async function loadMomentum() {
+
+    const table = document.getElementById("momentumTable");
+
+    if (!table) return;
+
+    table.innerHTML = "";
+
+    let momentumData = [];
+
+    for (const symbol of STOCKS) {
+
+        const quote = await getQuote(symbol);
+
+        if (!quote) continue;
+
+        // حساب مبدئي لقوة الزخم
+        let score = 50;
+
+        if (quote.change > 0) {
+            score += Math.min(40, quote.change * 8);
+        } else {
+            score -= Math.min(40, Math.abs(quote.change) * 8);
+        }
+
+        score = Math.max(0, Math.min(100, Math.round(score)));
+
+        let signal = "🔴 Avoid";
+
+        if (score >= 85) {
+            signal = "🟢 Strong Buy";
+        } else if (score >= 70) {
+            signal = "🟡 Watch";
+        }
+
+        momentumData.push({
+            symbol,
+            price: quote.price,
+            change: quote.change,
+            score,
+            signal
+        });
+
+    }
+
+    momentumData.sort((a, b) => b.score - a.score);
+
+    momentumData.slice(0, 15).forEach((stock, index) => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${stock.symbol}</td>
+            <td>${stock.score}/100</td>
+            <td>${stock.signal}</td>
+        </tr>
+        `;
+
+    });
+
+}
