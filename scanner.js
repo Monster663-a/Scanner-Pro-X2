@@ -142,7 +142,9 @@ async function scanStocks(){
        const momentum = calculateMomentumScore(quote,history);
 
         const signal = buildSignal(change,momentum);
+const entry = getEntrySignal(momentum,change);
 
+const momentumStart = estimateMomentumStart();
         results.push({
 
             symbol,
