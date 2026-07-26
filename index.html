@@ -19,36 +19,61 @@
 <aside class="sidebar">
 
 <div class="logo">
+
 <h1>Scanner Pro X</h1>
+
+<p>Professional Trading Scanner</p>
+
 </div>
 
 <nav>
 
-<a href="#" class="active">Dashboard</a>
+<a href="#" id="dashboardMenu" class="active">
+🏠 Dashboard
+</a>
 
-<a href="#" id="scannerMenu">Scanner</a>
+<a href="#" id="scannerMenu">
+🔎 Scanner
+</a>
 
-<a href="#" id="hotStocksMenu">🔥 Hot Stocks</a>
+<a href="#" id="hotStocksMenu">
+🔥 Hot Stocks
+</a>
 
-<a href="#">Watchlist</a>
+<a href="#" id="momentumMenu">
+🚀 Momentum
+</a>
 
-<a href="#">Top Gainers</a>
+<a href="#" id="riskMenu">
+💰 Position Size
+</a>
 
-<a href="#">Top Losers</a>
+<a href="#" id="gainersMenu">
+📈 Top Gainers
+</a>
 
-<a href="#">News</a>
+<a href="#" id="losersMenu">
+📉 Top Losers
+</a>
 
-<a href="#" id="momentumMenu">🚀 Momentum</a>
+<a href="#" id="newsMenu">
+📰 News
+</a>
 
-<a href="#">Settings</a>
+<a href="#" id="settingsMenu">
+⚙️ Settings
+</a>
 
 </nav>
 
 </aside>
 
 <main class="content">
+<!-- ============================= -->
+<!-- Dashboard -->
+<!-- ============================= -->
 
-<div id="dashboardPage">
+<section id="dashboardPage">
 
 <header class="topbar">
 
@@ -61,9 +86,7 @@
 </div>
 
 <button id="scanBtn">
-
 Scan Now
-
 </button>
 
 </header>
@@ -86,7 +109,7 @@ Loading...
 
 <h3>Watchlist</h3>
 
-<span>
+<span id="watchlistCount">
 
 6 Symbols
 
@@ -101,6 +124,18 @@ Loading...
 <span id="lastScan">
 
 Never
+
+</span>
+
+</div>
+
+<div class="card">
+
+<h3>Scanner Version</h3>
+
+<span>
+
+Scanner Pro X v2
 
 </span>
 
@@ -129,21 +164,27 @@ Never
 </thead>
 
 <tbody id="watchlistTable">
-    </tbody>
+
+</tbody>
 
 </table>
 
 </section>
 
-</div>
+</section>
+<!-- ============================= -->
+<!-- Scanner -->
+<!-- ============================= -->
 
 <section id="scannerPage" style="display:none;">
 
 <div class="card">
 
-<h2>Scanner Filters</h2>
+<h2>🔎 Stock Scanner</h2>
 
 <div class="filters">
+
+<div>
 
 <label>Minimum Price</label>
 
@@ -152,12 +193,20 @@ id="minPrice"
 type="number"
 value="5">
 
+</div>
+
+<div>
+
 <label>Maximum Price</label>
 
 <input
 id="maxPrice"
 type="number"
-value="100">
+value="1000">
+
+</div>
+
+<div>
 
 <label>Minimum Change %</label>
 
@@ -166,16 +215,24 @@ id="minChange"
 type="number"
 value="2">
 
+</div>
+
+<div>
+
 <label>Search Symbol</label>
 
 <input
 id="searchSymbol"
 type="text"
-placeholder="مثال: NVDA أو TSLA">
+placeholder="NVDA">
+
+</div>
+
+<div>
 
 <button id="runScanner">
 
-Scan Stocks
+🚀 Scan Stocks
 
 </button>
 
@@ -183,73 +240,7 @@ Scan Stocks
 
 </div>
 
-<div class="table-box">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Symbol</th>
-
-<th>Price</th>
-
-<th>Change %</th>
-
-<th>Result</th>
-
-</tr>
-
-</thead>
-
-<tbody id="scannerResults">
-    </tbody>
-
-</table>
-
 </div>
-
-</section>
-
-<section id="hotStocksPage" style="display:none;">
-
-<div class="card">
-
-<h2>🔥 Hot Stocks Today</h2>
-
-<div class="table-box">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Symbol</th>
-<th>Price</th>
-<th>Change %</th>
-<th>Status</th>
-
-</tr>
-
-</thead>
-
-<tbody id="hotStocksTable">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</section>
-<section id="momentumPage" style="display:none;">
-
-<div class="card">
-
-<h2>🚀 Momentum Scanner</h2>
 
 <div class="table-box">
 
@@ -260,8 +251,105 @@ Scan Stocks
 <tr>
 
 <th>Rank</th>
+
 <th>Symbol</th>
+
+<th>Price</th>
+
+<th>Change %</th>
+
+<th>Signal</th>
+
+</tr>
+
+</thead>
+
+<tbody id="scannerResults">
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+<!-- ============================= -->
+<!-- Hot Stocks -->
+<!-- ============================= -->
+
+<section id="hotStocksPage" style="display:none;">
+
+<div class="card">
+
+<h2>🔥 Hot Stocks Today</h2>
+
+<p>Top momentum stocks in today's market</p>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Rank</th>
+
+<th>Symbol</th>
+
+<th>Price</th>
+
+<th>Change %</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="hotStocksTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+<!-- ============================= -->
+<!-- Momentum Scanner -->
+<!-- ============================= -->
+
+<section id="momentumPage" style="display:none;">
+
+<div class="card">
+
+<h2>🚀 Momentum Scanner</h2>
+
+<p>Highest quality momentum trading opportunities</p>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Rank</th>
+
+<th>Symbol</th>
+
 <th>Score</th>
+
+<th>Entry</th>
+
+<th>Stop</th>
+
+<th>Target</th>
+
 <th>Signal</th>
 
 </tr>
@@ -279,6 +367,180 @@ Scan Stocks
 </div>
 
 </section>
+<!-- ============================= -->
+<!-- Position Size Calculator -->
+<!-- ============================= -->
+
+<section id="riskPage" style="display:none;">
+
+<div class="card">
+
+<h2>💰 Position Size Calculator</h2>
+
+<div class="filters">
+
+<label>Account Size ($)</label>
+<input id="accountSize" type="number" value="3000">
+
+<label>Risk Per Trade (%)</label>
+<input id="riskPercent" type="number" value="1.5">
+
+<label>Entry Price</label>
+<input id="entryPrice" type="number">
+
+<label>Stop Loss</label>
+<input id="stopPrice" type="number">
+
+<button id="calculateRisk">
+Calculate Position
+</button>
+
+</div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Risk ($)</th>
+
+<th>Shares</th>
+
+<th>Position Value</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td id="riskDollar">-</td>
+
+<td id="sharesResult">-</td>
+
+<td id="positionValue">-</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ============================= -->
+<!-- Top Gainers -->
+<!-- ============================= -->
+
+<section id="gainersPage" style="display:none;">
+
+<div class="card">
+
+<h2>📈 Top Gainers</h2>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Rank</th>
+
+<th>Symbol</th>
+
+<th>Price</th>
+
+<th>Change %</th>
+
+</tr>
+
+</thead>
+
+<tbody id="gainersTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ============================= -->
+<!-- Top Losers -->
+<!-- ============================= -->
+
+<section id="losersPage" style="display:none;">
+
+<div class="card">
+
+<h2>📉 Top Losers</h2>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Rank</th>
+
+<th>Symbol</th>
+
+<th>Price</th>
+
+<th>Change %</th>
+
+</tr>
+
+</thead>
+
+<tbody id="losersTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ============================= -->
+<!-- News -->
+<!-- ============================= -->
+
+<section id="newsPage" style="display:none;">
+
+<div class="card">
+
+<h2>📰 Market News</h2>
+
+<div id="newsContainer">
+
+Loading latest news...
+
+</div>
+
+</div>
+
+</section>
+
 </main>
 
 </div>
