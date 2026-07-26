@@ -1,9 +1,9 @@
 // =====================================
-// Scanner Pro X v3
+// Scanner Pro X v4 Engine
 // =====================================
 
 // ================================
-// Stocks List
+// Stocks
 // ================================
 
 const STOCKS = [
@@ -49,13 +49,83 @@ const STOCKS = [
 "PATH",
 "CAVA",
 "CELH",
-"DDOG"
+"DDOG",
+
+// قائمتك
+"COHR",
+"SNDK",
+"WDC",
+"DELL",
+"IBM",
+"SPCX",
+"AMKR",
+"SKHY",
+"FN",
+"VRT",
+"ASML",
+"BE",
+"AUR"
 
 ];
 
-// ================================
-// Filters
-// ================================
+// =====================================
+// Cache
+// =====================================
+
+const CACHE = new Map();
+
+const CACHE_TIME = 60000;
+
+// =====================================
+// Delay
+// =====================================
+
+function sleep(ms){
+
+    return new Promise(resolve=>setTimeout(resolve,ms));
+
+}
+
+// =====================================
+// Cache Helpers
+// =====================================
+
+function getCache(symbol){
+
+    const item = CACHE.get(symbol);
+
+    if(!item){
+
+        return null;
+
+    }
+
+    if(Date.now()-item.time > CACHE_TIME){
+
+        CACHE.delete(symbol);
+
+        return null;
+
+    }
+
+    return item.data;
+
+}
+
+function saveCache(symbol,data){
+
+    CACHE.set(symbol,{
+
+        data,
+
+        time:Date.now()
+
+    });
+
+}
+// =====================================
+// قراءة الفلاتر
+// =====================================
 
 function getScannerFilters(){
 
@@ -69,13 +139,151 @@ function getScannerFilters(){
 
         search:document.getElementById("searchSymbol")?.value
             .trim()
-            .toUpperCase() || ""
+            .toUpperCase()
 
     };
 
 }
+
 // =====================================
-// Main Scanner
+// جلب بيانات السهم مع Cache
+// =====================================
+
+async function getStockData(symbol){
+
+    const cached = getCache(symbol);
+
+    if(cached){
+
+        return cached;
+
+    }
+
+    try{
+
+        const quote = await getQuote(symbol);
+
+        await sleep(300);
+
+        if(!quote){
+
+            return null;
+
+        }
+
+        const history = await getHistory(symbol,"1day",5);
+
+        await sleep(700);
+
+        if(!history){
+
+            return null;
+
+        }
+
+        const data = {
+
+            symbol,
+
+            quote,
+
+            history
+
+        };
+
+        saveCache(symbol,data);
+
+        return data;
+
+    }catch(error){
+
+        console.error(symbol,error);
+
+        return null;
+
+    }
+
+}
+
+// =====================================
+// Batch Scanner
+// =====================================
+
+async function scanBatch(list){
+
+    const results=[];
+
+    for(const symbol of list){
+
+        const stock = await getStockData(symbol);
+
+        if(stock){
+
+            results.push(stock);
+
+        }
+
+    }
+
+    return results;
+
+}
+// =====================================
+// إنشاء صف في الجدول
+// =====================================
+
+function addScannerRow(stock){
+
+    const tbody = document.getElementById("scannerBody");
+
+    if(!tbody){
+
+        return;
+
+    }
+
+    const quote = stock.quote;
+
+    const history = stock.history;
+
+    const price = Number(quote.c);
+
+    const change = Number(quote.dp);
+
+    const momentum = calculateMomentumScore(quote,history);
+
+    const signal = buildSignal(change,momentum);
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+
+        <td>${stock.symbol}</td>
+
+        <td>$${price.toFixed(2)}</td>
+
+        <td>${change.toFixed(2)}%</td>
+
+        <td>${momentum}/100</td>
+
+        <td>$${price.toFixed(2)}</td>
+
+        <td>$${(price*0.98).toFixed(2)}</td>
+
+        <td>$${(price*1.04).toFixed(2)}</td>
+
+        <td class="${signal.className}">
+            ${signal.text}
+        </td>
+
+    `;
+
+    tbody.appendChild(row);
+
+}
+
+// =====================================
+// محرك الفحص الرئيسي
 // =====================================
 
 async function scanStocks(){
@@ -88,464 +296,116 @@ async function scanStocks(){
 
     }
 
-    tbody.innerHTML = `
-    <tr>
-        <td colspan="7">Scanning stocks...</td>
-    </tr>
-    `;
+    tbody.innerHTML = "";
 
     const filters = getScannerFilters();
 
-    const results = [];
+    const batchSize = 5;
 
-    for(const symbol of STOCKS){
+    for(let i=0;i<STOCKS.length;i+=batchSize){
 
-        if(
-            filters.search &&
-            !symbol.includes(filters.search)
-        ){
-            continue;
+        const batch = STOCKS.slice(i,i+batchSize);
+
+        const results=[];
+
+for(const symbol of batch){
+
+    const stock=await getStockDataWithRetry(symbol);
+
+    if(stock){
+
+        results.push(stock);
+
+    }
+
+}
+
+        for(const stock of results){
+
+            const quote = stock.quote;
+
+            const price = Number(quote.c);
+
+            const change = Number(quote.dp);
+
+            if(price < filters.minPrice) continue;
+
+            if(price > filters.maxPrice) continue;
+
+            if(change < filters.minChange) continue;
+
+            if(
+                filters.search &&
+                !stock.symbol.includes(filters.search)
+            ){
+                continue;
+            }
+
+            addScannerRow(stock);
+updateProgress(
+    Math.min(i+batchSize,STOCKS.length),
+    STOCKS.length
+);
+
+await sleep(1500);
+
+    }
+
+}
+// =====================================
+// Retry عند حدوث 429
+// =====================================
+
+async function getStockDataWithRetry(symbol){
+
+    let retries = 3;
+
+    while(retries > 0){
+
+        try{
+
+            const data = await getStockData(symbol);
+
+            if(data){
+
+                return data;
+
+            }
+
+        }catch(error){
+
+            console.log(symbol,error);
+
         }
 
-        const quote = await getQuote(symbol);
+        retries--;
 
-        if(!quote){
-
-            continue;
-
-        }
-
-        const price = Number(quote.c);
-
-        const change = Number(quote.dp);
-
-        if(price < filters.minPrice){
-
-            continue;
-
-        }
-
-        if(price > filters.maxPrice){
-
-            continue;
-
-        }
-
-        if(change < filters.minChange){
-
-            continue;
-
-        }
-
-        const history = await getHistory(symbol,"1day",5);
-
-        const momentum = calculateMomentum(history);
-
-        const signal = buildSignal(change,momentum);
-
-        results.push({
-
-            symbol,
-
-            price,
-
-            change,
-
-            momentum,
-
-            signal
-
-        });
+        await sleep(2000);
 
     }
 
-    results.sort((a,b)=>{
-
-        return b.momentum-a.momentum;
-
-    });
-
-    tbody.innerHTML = "";
-
-    results.forEach(stock=>{
-
-        const entry = stock.price;
-
-        const stop = stock.price * 0.98;
-
-        const target = stock.price * 1.04;
-
-        tbody.innerHTML += `
-        <tr>
-
-            <td>${stock.symbol}</td>
-
-            <td>$${stock.price.toFixed(2)}</td>
-
-            <td>${stock.change.toFixed(2)}%</td>
-
-            <td>$${entry.toFixed(2)}</td>
-
-            <td>$${stop.toFixed(2)}</td>
-
-            <td>$${target.toFixed(2)}</td>
-
-            <td class="${stock.signal.className}">
-                ${stock.signal.text}
-            </td>
-
-        </tr>
-        `;
-
-    });
-
-}
-// =====================================
-// Hot Stocks
-// =====================================
-
-async function loadHotStocks(){
-
-    const tbody = document.getElementById("hotStocksBody");
-
-    if(!tbody) return;
-
-    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-
-    const stocks = [];
-
-    for(const symbol of STOCKS){
-
-        const quote = await getQuote(symbol);
-
-        if(!quote) continue;
-
-        stocks.push({
-
-            symbol,
-
-            price:Number(quote.c),
-
-            change:Number(quote.dp)
-
-        });
-
-    }
-
-    stocks.sort((a,b)=>b.change-a.change);
-
-    tbody.innerHTML = "";
-
-    stocks.slice(0,10).forEach((stock,index)=>{
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${index+1}</td>
-            <td>${stock.symbol}</td>
-            <td>$${stock.price.toFixed(2)}</td>
-            <td class="bullish">${stock.change.toFixed(2)}%</td>
-        </tr>
-        `;
-
-    });
+    return null;
 
 }
 
 // =====================================
-// Momentum Ranking
+// Progress
 // =====================================
 
-async function loadMomentum(){
+function updateProgress(done,total){
 
-    const tbody=document.getElementById("momentumBody");
+    const progress=document.getElementById("scanProgress");
 
-    if(!tbody) return;
+    if(!progress){
 
-    tbody.innerHTML="<tr><td colspan='7'>Loading...</td></tr>";
-
-    const ranking=[];
-
-    for(const symbol of STOCKS){
-
-        const quote=await getQuote(symbol);
-
-        if(!quote) continue;
-
-        const history=await getHistory(symbol,"1day",5);
-
-        const momentum=calculateMomentum(history);
-
-        const signal=buildSignal(
-const entry = getEntrySignal(momentum,change);
-
-const momentumStart = estimateMomentumStart();
-            Number(quote.dp),
-
-            momentum
-
-        );
-
-        ranking.push({
-
-            symbol,
-
-            price:Number(quote.c),
-
-            score:momentum,
-
-            signal
-
-        });
+        return;
 
     }
 
-    ranking.sort((a,b)=>b.score-a.score);
+    const percent=Math.round((done/total)*100);
 
-    tbody.innerHTML="";
+    progress.style.width=percent+"%";
 
-    ranking.slice(0,20).forEach((stock,index)=>{
-
-        const stop=stock.price*0.98;
-
-        const target=stock.price*1.04;
-
-        tbody.innerHTML+=`
-        <tr>
-
-            <td>${index+1}</td>
-
-            <td>${stock.symbol}</td>
-
-            <td>${stock.score.toFixed(2)}</td>
-
-            <td>$${stock.price.toFixed(2)}</td>
-
-            <td>$${stop.toFixed(2)}</td>
-
-            <td>$${target.toFixed(2)}</td>
-
-            <td class="${stock.signal.className}">
-                ${stock.signal.text}
-            </td>
-
-        </tr>
-        `;
-
-    });
-
-}
-// =====================================
-// Top Gainers
-// =====================================
-
-async function loadGainers(){
-
-    const tbody = document.getElementById("gainersBody");
-
-    if(!tbody) return;
-
-    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-
-    const list = [];
-
-    for(const symbol of STOCKS){
-
-        const quote = await getQuote(symbol);
-
-        if(!quote) continue;
-
-        list.push({
-            symbol,
-            price:Number(quote.c),
-            change:Number(quote.dp)
-        });
-
-    }
-
-    list.sort((a,b)=>b.change-a.change);
-
-    tbody.innerHTML = "";
-
-    list.slice(0,20).forEach((stock,index)=>{
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${index+1}</td>
-            <td>${stock.symbol}</td>
-            <td>$${stock.price.toFixed(2)}</td>
-            <td class="bullish">${stock.change.toFixed(2)}%</td>
-        </tr>
-        `;
-
-    });
-
-}
-
-// =====================================
-// Top Losers
-// =====================================
-
-async function loadLosers(){
-
-    const tbody = document.getElementById("losersBody");
-
-    if(!tbody) return;
-
-    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-
-    const list = [];
-
-    for(const symbol of STOCKS){
-
-        const quote = await getQuote(symbol);
-
-        if(!quote) continue;
-
-        list.push({
-            symbol,
-            price:Number(quote.c),
-            change:Number(quote.dp)
-        });
-
-    }
-
-    list.sort((a,b)=>a.change-b.change);
-
-    tbody.innerHTML = "";
-
-    list.slice(0,20).forEach((stock,index)=>{
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${index+1}</td>
-            <td>${stock.symbol}</td>
-            <td>$${stock.price.toFixed(2)}</td>
-            <td class="bearish">${stock.change.toFixed(2)}%</td>
-        </tr>
-        `;
-
-    });
-
-}
-
-// =====================================
-// Scanner Button
-// =====================================
-
-const scanButton = document.getElementById("scanBtn");
-
-if(scanButton){
-
-    scanButton.addEventListener("click",scanStocks);
-
-}
-
-// =====================================
-// Auto Refresh Scanner Pages
-// =====================================
-
-setInterval(()=>{
-
-    const page = document.querySelector(".page.active");
-
-    if(!page) return;
-
-    switch(page.id){
-
-        case "scannerPage":
-            scanStocks();
-            break;
-
-        case "hotStocksPage":
-            loadHotStocks();
-            break;
-
-        case "momentumPage":
-            loadMomentum();
-            break;
-
-        case "gainersPage":
-            loadGainers();
-            break;
-
-        case "losersPage":
-            loadLosers();
-            break;
-
-        case "newsPage":
-            loadNews();
-            break;
-
-    }
-
-},60000);
-
-console.log("✅ Scanner Pro X v3 Loaded");
-// =====================================
-// تحليل أفضل وقت للدخول
-// =====================================
-
-function getEntrySignal(score, change){
-
-    if(score >= 90 && change < 8){
-
-        return{
-            text:"🟢 شراء قوي الآن",
-            color:"strong-buy"
-        };
-
-    }
-
-    if(score >= 75 && change < 12){
-
-        return{
-            text:"🟢 دخول مناسب",
-            color:"bullish"
-        };
-
-    }
-
-    if(score >= 60){
-
-        return{
-            text:"🟡 راقب السهم",
-            color:"watch"
-        };
-
-    }
-
-    return{
-
-        text:"🔴 لا تدخل",
-        color:"avoid"
-
-    };
-
-}
-
-// =====================================
-// تقدير بداية الزخم
-// =====================================
-
-function estimateMomentumStart(){
-
-    const now = new Date();
-
-    const h = now.getHours();
-
-    const m = now.getMinutes();
-
-    const start = new Date();
-
-    start.setHours(h);
-
-    start.setMinutes(m-15);
-
-    return start.toLocaleTimeString([],{
-
-        hour:"2-digit",
-        minute:"2-digit"
-
-    });
+    progress.innerText=percent+"%";
 
 }
