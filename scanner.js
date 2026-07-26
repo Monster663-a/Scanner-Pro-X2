@@ -8,20 +8,49 @@
 
 const STOCKS = [
 
-"COHR",
-"SNDK",
-"WDC",
+"NVDA",
+"MSFT",
+"AAPL",
+"AMZN",
+"META",
+"TSLA",
+"AMD",
+"PLTR",
+"AVGO",
+"NFLX",
+"GOOGL",
+"ORCL",
+"CRM",
+"CRWD",
+"SNOW",
+"SHOP",
+"UBER",
+"COIN",
+"SMCI",
+"ARM",
+"MU",
+"ANET",
+"PANW",
+"TSM",
 "QCOM",
-"DELL",
-"IBM",
-"SPCX",
-"AMKR",
-"SKHY",
-"FN",
-"VRT",
-"ASML",
-"BE",
-"AUR",
+"INTC",
+"MRVL",
+"RDDT",
+"HIMS",
+"HOOD",
+"RKLB",
+"ASTS",
+"TOST",
+"APP",
+"IONQ",
+"QBTS",
+"TEM",
+"SOUN",
+"PATH",
+"CAVA",
+"CELH",
+"DDOG"
+
 ];
 
 // ================================
@@ -110,12 +139,10 @@ async function scanStocks(){
 
         const history = await getHistory(symbol,"1day",5);
 
-       const momentum = calculateMomentumScore(quote,history);
+        const momentum = calculateMomentum(history);
 
         const signal = buildSignal(change,momentum);
-const entry = getEntrySignal(momentum,change);
 
-const momentumStart = estimateMomentumStart();
         results.push({
 
             symbol,
@@ -249,7 +276,9 @@ async function loadMomentum(){
         const momentum=calculateMomentum(history);
 
         const signal=buildSignal(
+const entry = getEntrySignal(momentum,change);
 
+const momentumStart = estimateMomentumStart();
             Number(quote.dp),
 
             momentum
