@@ -1,6 +1,10 @@
 // =====================================
-// Scanner Pro X
+// Scanner Pro X v3
 // =====================================
+
+// ================================
+// Stocks List
+// ================================
 
 const STOCKS = [
 
@@ -49,21 +53,23 @@ const STOCKS = [
 
 ];
 
-// =====================================
-// Helpers
-// =====================================
+// ================================
+// Filters
+// ================================
 
 function getScannerFilters(){
 
     return{
 
-        minPrice:Number(document.getElementById("minPrice").value)||0,
+        minPrice:Number(document.getElementById("minPrice")?.value)||0,
 
-        maxPrice:Number(document.getElementById("maxPrice").value)||99999,
+        maxPrice:Number(document.getElementById("maxPrice")?.value)||999999,
 
-        minChange:Number(document.getElementById("minChange").value)||0,
+        minChange:Number(document.getElementById("minChange")?.value)||0,
 
-        search:document.getElementById("searchSymbol").value.trim().toUpperCase()
+        search:document.getElementById("searchSymbol")?.value
+            .trim()
+            .toUpperCase() || ""
 
     };
 
@@ -74,88 +80,124 @@ function getScannerFilters(){
 
 async function scanStocks(){
 
-    const filters = getScannerFilters();
-
     const tbody = document.getElementById("scannerBody");
 
-    if(!tbody) return;
+    if(!tbody){
 
-    tbody.innerHTML = "";
-
-    for(const symbol of STOCKS){
-
-        if(filters.search && !symbol.includes(filters.search)){
-            continue;
-        }
-
-        try{
-
-            const quote = await getQuote(symbol);
-
-            if(!quote) continue;
-
-            const price = Number(quote.c);
-            const change = Number(quote.dp);
-
-            if(price < filters.minPrice) continue;
-            if(price > filters.maxPrice) continue;
-            if(change < filters.minChange) continue;
-
-            const entry = price.toFixed(2);
-            const stop = (price * 0.98).toFixed(2);
-            const target = (price * 1.04).toFixed(2);
-
-            let signal = "Watch";
-            let css = "watch";
-
-            if(change >= 3){
-                signal = "Strong Buy";
-                css = "strong-buy";
-            }
-            else if(change >= 1){
-                signal = "Bullish";
-                css = "bullish";
-            }
-            else if(change <= -3){
-                signal = "Avoid";
-                css = "avoid";
-            }
-            else if(change < 0){
-                signal = "Bearish";
-                css = "bearish";
-            }
-
-            tbody.innerHTML += `
-            <tr>
-                <td>${symbol}</td>
-                <td>$${price.toFixed(2)}</td>
-                <td>${change.toFixed(2)}%</td>
-                <td>$${entry}</td>
-                <td>$${stop}</td>
-                <td>$${target}</td>
-                <td class="${css}">${signal}</td>
-            </tr>
-            `;
-
-        }catch(error){
-
-            console.error(symbol,error);
-
-        }
+        return;
 
     }
 
-}
+    tbody.innerHTML = `
+    <tr>
+        <td colspan="7">Scanning stocks...</td>
+    </tr>
+    `;
 
-// =====================================
-// Scan Button
-// =====================================
+    const filters = getScannerFilters();
 
-const scanButton = document.getElementById("scanBtn");
+    const results = [];
 
-if(scanButton){
+    for(const symbol of STOCKS){
 
-    scanButton.addEventListener("click", scanStocks);
+        if(
+            filters.search &&
+            !symbol.includes(filters.search)
+        ){
+            continue;
+        }
+
+        const quote = await getQuote(symbol);
+
+        if(!quote){
+
+            continue;
+
+        }
+
+        const price = Number(quote.c);
+
+        const change = Number(quote.dp);
+
+        if(price < filters.minPrice){
+
+            continue;
+
+        }
+
+        if(price > filters.maxPrice){
+
+            continue;
+
+        }
+
+        if(change < filters.minChange){
+
+            continue;
+
+        }
+
+        const history = await getHistory(symbol,"1day",5);
+
+        const momentum = calculateMomentum(history);
+
+        const signal = buildSignal(change,momentum);
+
+        results.push({
+
+            symbol,
+
+            price,
+
+            change,
+
+            momentum,
+
+            signal
+
+        });
+
+    }
+
+    results.sort((a,b)=>{
+
+        return b.momentum-a.momentum;
+
+    });
+
+    tbody.innerHTML = "";
+
+    results.forEach(stock=>{
+
+        const entry = stock.price;
+
+        const stop = stock.price * 0.98;
+
+        const target = stock.price * 1.04;
+
+        tbody.innerHTML += `
+        <tr>
+
+            <td>${stock.symbol}</td>
+
+            <td>$${stock.price.toFixed(2)}</td>
+
+            <td>${stock.change.toFixed(2)}%</td>
+
+            <td>$${entry.toFixed(2)}</td>
+
+            <td>$${stop.toFixed(2)}</td>
+
+            <td>$${target.toFixed(2)}</td>
+
+            <td class="${stock.signal.className}">
+                ${stock.signal.text}
+            </td>
+
+        </tr>
+        `;
+
+    });
 
 }
 // =====================================
@@ -168,42 +210,37 @@ async function loadHotStocks(){
 
     if(!tbody) return;
 
-    tbody.innerHTML = "";
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
-    let results = [];
+    const stocks = [];
 
     for(const symbol of STOCKS){
 
-        try{
+        const quote = await getQuote(symbol);
 
-            const quote = await getQuote(symbol);
+        if(!quote) continue;
 
-            if(!quote) continue;
+        stocks.push({
 
-            results.push({
+            symbol,
 
-                symbol,
+            price:Number(quote.c),
 
-                price:Number(quote.c),
+            change:Number(quote.dp)
 
-                change:Number(quote.dp)
-
-            });
-
-        }catch(e){
-
-            console.error(e);
-
-        }
+        });
 
     }
 
-    results.sort((a,b)=>b.change-a.change);
+    stocks.sort((a,b)=>b.change-a.change);
 
-    results.slice(0,10).forEach(stock=>{
+    tbody.innerHTML = "";
+
+    stocks.slice(0,10).forEach((stock,index)=>{
 
         tbody.innerHTML += `
         <tr>
+            <td>${index+1}</td>
             <td>${stock.symbol}</td>
             <td>$${stock.price.toFixed(2)}</td>
             <td class="bullish">${stock.change.toFixed(2)}%</td>
@@ -220,84 +257,75 @@ async function loadHotStocks(){
 
 async function loadMomentum(){
 
-    const tbody = document.getElementById("momentumBody");
+    const tbody=document.getElementById("momentumBody");
 
     if(!tbody) return;
 
-    tbody.innerHTML = "";
+    tbody.innerHTML="<tr><td colspan='7'>Loading...</td></tr>";
 
-    let ranking = [];
+    const ranking=[];
 
     for(const symbol of STOCKS){
 
-        try{
+        const quote=await getQuote(symbol);
 
-            const quote = await getQuote(symbol);
+        if(!quote) continue;
 
-            if(!quote) continue;
+        const history=await getHistory(symbol,"1day",5);
 
-            const price = Number(quote.c);
-            const change = Number(quote.dp);
+        const momentum=calculateMomentum(history);
 
-            const score = (change * 10);
+        const signal=buildSignal(
 
-            ranking.push({
+            Number(quote.dp),
 
-                symbol,
+            momentum
 
-                price,
+        );
 
-                change,
+        ranking.push({
 
-                score
+            symbol,
 
-            });
+            price:Number(quote.c),
 
-        }catch(e){
+            score:momentum,
 
-            console.error(e);
+            signal
 
-        }
+        });
 
     }
 
     ranking.sort((a,b)=>b.score-a.score);
 
-    ranking.forEach((stock,index)=>{
+    tbody.innerHTML="";
 
-        const entry = stock.price.toFixed(2);
-        const stop = (stock.price*0.98).toFixed(2);
-        const target = (stock.price*1.04).toFixed(2);
+    ranking.slice(0,20).forEach((stock,index)=>{
 
-        let signal = "Watch";
-        let css = "watch";
+        const stop=stock.price*0.98;
 
-        if(stock.change >= 3){
+        const target=stock.price*1.04;
 
-            signal = "Strong Buy";
-            css = "strong-buy";
-
-        }else if(stock.change >= 1){
-
-            signal = "Bullish";
-            css = "bullish";
-
-        }else if(stock.change < 0){
-
-            signal = "Bearish";
-            css = "bearish";
-
-        }
-
-        tbody.innerHTML += `
+        tbody.innerHTML+=`
         <tr>
+
             <td>${index+1}</td>
+
             <td>${stock.symbol}</td>
-            <td>${stock.score.toFixed(0)}</td>
-            <td>$${entry}</td>
-            <td>$${stop}</td>
-            <td>$${target}</td>
-            <td class="${css}">${signal}</td>
+
+            <td>${stock.score.toFixed(2)}</td>
+
+            <td>$${stock.price.toFixed(2)}</td>
+
+            <td>$${stop.toFixed(2)}</td>
+
+            <td>$${target.toFixed(2)}</td>
+
+            <td class="${stock.signal.className}">
+                ${stock.signal.text}
+            </td>
+
         </tr>
         `;
 
@@ -314,46 +342,40 @@ async function loadGainers(){
 
     if(!tbody) return;
 
-    tbody.innerHTML = "";
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
-    let stocks = [];
+    const list = [];
 
     for(const symbol of STOCKS){
 
-        try{
+        const quote = await getQuote(symbol);
 
-            const quote = await getQuote(symbol);
+        if(!quote) continue;
 
-            if(!quote) continue;
-
-            stocks.push({
-                symbol,
-                price:Number(quote.c),
-                change:Number(quote.dp)
-            });
-
-        }catch(e){
-
-            console.error(e);
-
-        }
+        list.push({
+            symbol,
+            price:Number(quote.c),
+            change:Number(quote.dp)
+        });
 
     }
 
-    stocks
-        .sort((a,b)=>b.change-a.change)
-        .slice(0,10)
-        .forEach(stock=>{
+    list.sort((a,b)=>b.change-a.change);
 
-            tbody.innerHTML += `
-            <tr>
-                <td>${stock.symbol}</td>
-                <td>$${stock.price.toFixed(2)}</td>
-                <td class="bullish">${stock.change.toFixed(2)}%</td>
-            </tr>
-            `;
+    tbody.innerHTML = "";
 
-        });
+    list.slice(0,20).forEach((stock,index)=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index+1}</td>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td class="bullish">${stock.change.toFixed(2)}%</td>
+        </tr>
+        `;
+
+    });
 
 }
 
@@ -367,97 +389,93 @@ async function loadLosers(){
 
     if(!tbody) return;
 
-    tbody.innerHTML = "";
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
 
-    let stocks = [];
+    const list = [];
 
     for(const symbol of STOCKS){
 
-        try{
+        const quote = await getQuote(symbol);
 
-            const quote = await getQuote(symbol);
+        if(!quote) continue;
 
-            if(!quote) continue;
-
-            stocks.push({
-                symbol,
-                price:Number(quote.c),
-                change:Number(quote.dp)
-            });
-
-        }catch(e){
-
-            console.error(e);
-
-        }
+        list.push({
+            symbol,
+            price:Number(quote.c),
+            change:Number(quote.dp)
+        });
 
     }
 
-    stocks
-        .sort((a,b)=>a.change-b.change)
-        .slice(0,10)
-        .forEach(stock=>{
+    list.sort((a,b)=>a.change-b.change);
 
-            tbody.innerHTML += `
-            <tr>
-                <td>${stock.symbol}</td>
-                <td>$${stock.price.toFixed(2)}</td>
-                <td class="bearish">${stock.change.toFixed(2)}%</td>
-            </tr>
-            `;
+    tbody.innerHTML = "";
 
-        });
+    list.slice(0,20).forEach((stock,index)=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index+1}</td>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td class="bearish">${stock.change.toFixed(2)}%</td>
+        </tr>
+        `;
+
+    });
 
 }
 
 // =====================================
-// Auto Refresh
+// Scanner Button
+// =====================================
+
+const scanButton = document.getElementById("scanBtn");
+
+if(scanButton){
+
+    scanButton.addEventListener("click",scanStocks);
+
+}
+
+// =====================================
+// Auto Refresh Scanner Pages
 // =====================================
 
 setInterval(()=>{
 
-    if(document.getElementById("scannerPage").style.display==="block"){
+    const page = document.querySelector(".page.active");
 
-        scanStocks();
+    if(!page) return;
 
-    }
+    switch(page.id){
 
-    if(document.getElementById("hotStocksPage").style.display==="block"){
+        case "scannerPage":
+            scanStocks();
+            break;
 
-        loadHotStocks();
+        case "hotStocksPage":
+            loadHotStocks();
+            break;
 
-    }
+        case "momentumPage":
+            loadMomentum();
+            break;
 
-    if(document.getElementById("momentumPage").style.display==="block"){
+        case "gainersPage":
+            loadGainers();
+            break;
 
-        loadMomentum();
+        case "losersPage":
+            loadLosers();
+            break;
 
-    }
-
-    if(document.getElementById("gainersPage").style.display==="block"){
-
-        loadGainers();
-
-    }
-
-    if(document.getElementById("losersPage").style.display==="block"){
-
-        loadLosers();
+        case "newsPage":
+            loadNews();
+            break;
 
     }
 
 },60000);
 
-// =====================================
-// Initial Scan
-// =====================================
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-    if(typeof scanStocks==="function"){
-
-        scanStocks();
-
-    }
-
-});
+console.log("✅ Scanner Pro X v3 Loaded");
