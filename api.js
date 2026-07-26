@@ -439,3 +439,62 @@ async function retryRequest(request,retries=3){
 // =====================================
 
 console.log("✅ Scanner Pro X API Loaded");
+// =====================================
+// قوة الزخم (0 - 100)
+// =====================================
+
+function calculateMomentumScore(quote, history){
+
+    if(!quote || !history || history.length < 5){
+
+        return 0;
+
+    }
+
+    const change = Number(quote.dp) || 0;
+
+    const volume = Number(history[history.length-1].volume || 0);
+
+    let avgVolume = 0;
+
+    history.forEach(candle=>{
+
+        avgVolume += Number(candle.volume || 0);
+
+    });
+
+    avgVolume /= history.length;
+
+    const volumeRatio = avgVolume > 0
+        ? volume / avgVolume
+        : 1;
+
+    const close = Number(history[history.length-1].close);
+
+    let high = 0;
+
+    history.forEach(candle=>{
+
+        if(Number(candle.high) > high){
+
+            high = Number(candle.high);
+
+        }
+
+    });
+
+    const highRatio = high > 0
+        ? close / high
+        : 1;
+
+    let score = 0;
+
+    score += Math.min(change * 4,40);
+
+    score += Math.min(volumeRatio * 20,30);
+
+    score += highRatio * 30;
+
+    return Math.max(0,Math.min(100,Math.round(score)));
+
+}
