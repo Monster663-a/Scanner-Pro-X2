@@ -1,237 +1,39 @@
-// ======================================
-// Scanner Pro X API
-// ======================================
+// =====================================
+// Scanner Pro X v3 API
+// =====================================
 
-// ===== API KEYS =====
+// ---------- API Keys ----------
 
 const FINNHUB_API_KEY = "d9gj7g1r01qq6536hg2gd9gj7g1r01qq6536hg30";
 
-const TWELVE_API_KEY = "47ce95d1154741b49acb5803d83dd79f";
+const TWELVEDATA_API_KEY = "47ce95d1154741b49acb5803d83dd79f";
 
-// ===== BASE URLS =====
+// ---------- API URLs ----------
 
-const FINNHUB_BASE = "https://finnhub.io/api/v1";
+const FINNHUB_URL = "https://finnhub.io/api/v1";
 
-const TWELVE_BASE = "https://api.twelvedata.com";
+const TWELVE_URL = "https://api.twelvedata.com";
 
-// ===== Request Delay =====
+// ---------- Cache ----------
 
-const REQUEST_DELAY = 800;
+const cache = {};
 
-// ===== Sleep =====
+const CACHE_TIME = 60000;
+
+// ---------- Sleep ----------
 
 function sleep(ms){
 
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve=>setTimeout(resolve,ms));
 
 }
-// ======================================
-// Get Stock Quote (Finnhub)
-// ======================================
-
-async function getQuote(symbol){
-
-    try{
-
-        const response = await fetch(
-
-            `${FINNHUB_BASE}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
-
-        );
-
-        if(!response.ok){
-
-            throw new Error("Failed to fetch quote");
-
-        }
-
-        const data = await response.json();
-
-        await sleep(REQUEST_DELAY);
-
-        return data;
-
-    }catch(error){
-
-        console.error("Quote Error:", symbol, error);
-
-        return null;
-
-    }
-
-}
-// ======================================
-// Get Historical Data (Twelve Data)
-// ======================================
-
-async function getHistory(symbol, interval = "1day", outputsize = 30){
-
-    try{
-
-        const url = `${TWELVE_BASE}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${TWELVE_API_KEY}`;
-
-        const response = await fetch(url);
-
-        if(!response.ok){
-
-            throw new Error("Failed to fetch history");
-
-        }
-
-        const data = await response.json();
-
-        await sleep(REQUEST_DELAY);
-
-        if(!data.values){
-
-            return [];
-
-        }
-
-        return data.values;
-
-    }catch(error){
-
-        console.error("History Error:", symbol, error);
-
-        return [];
-
-    }
-
-}
-
-// ======================================
-// Get Latest Candle
-// ======================================
-
-async function getLatestCandle(symbol){
-
-    const candles = await getHistory(symbol,"1day",1);
-
-    if(candles.length === 0){
-
-        return null;
-
-    }
-
-    return candles[0];
-
-}
-// ======================================
-// Helpers
-// ======================================
-
-function average(values){
-
-    if(!values || values.length === 0){
-
-        return 0;
-
-    }
-
-    const sum = values.reduce((total, value) => total + value, 0);
-
-    return sum / values.length;
-
-}
-
-function calculateMomentum(history){
-
-    if(!history || history.length < 5){
-
-        return 0;
-
-    }
-
-    const latest = Number(history[0].close);
-
-    const previous = Number(history[4].close);
-
-    return ((latest - previous) / previous) * 100;
-
-}
-
-function calculateVolatility(history){
-
-    if(!history || history.length < 10){
-
-        return 0;
-
-    }
-
-    const changes = [];
-
-    for(let i = 0; i < history.length - 1; i++){
-
-        const current = Number(history[i].close);
-
-        const previous = Number(history[i + 1].close);
-
-        changes.push(Math.abs(((current - previous) / previous) * 100));
-
-    }
-
-    return average(changes);
-
-}
-
-// ======================================
-// Trading Signal
-// ======================================
-
-function buildSignal(change, momentum){
-
-    if(change >= 3 && momentum >= 5){
-
-        return{
-            text:"Strong Buy",
-            className:"strong-buy"
-        };
-
-    }
-
-    if(change >= 1){
-
-        return{
-            text:"Bullish",
-            className:"bullish"
-        };
-
-    }
-
-    if(change <= -3){
-
-        return{
-            text:"Avoid",
-            className:"avoid"
-        };
-
-    }
-
-    if(change < 0){
-
-        return{
-            text:"Bearish",
-            className:"bearish"
-        };
-
-    }
-
-    return{
-        text:"Watch",
-        className:"watch"
-    };
-
-}
-// ======================================
-// Cache
-// ======================================
-
-const apiCache = new Map();
+// =====================================
+// Cache Functions
+// =====================================
 
 function getCache(key){
 
-    const item = apiCache.get(key);
+    const item = cache[key];
 
     if(!item){
 
@@ -239,11 +41,9 @@ function getCache(key){
 
     }
 
-    const age = Date.now() - item.time;
+    if(Date.now() - item.time > CACHE_TIME){
 
-    if(age > 60000){
-
-        apiCache.delete(key);
+        delete cache[key];
 
         return null;
 
@@ -255,16 +55,298 @@ function getCache(key){
 
 function setCache(key,data){
 
-    apiCache.set(key,{
+    cache[key]={
+
         data:data,
+
         time:Date.now()
-    });
+
+    };
 
 }
 
-// ======================================
-// Get Company News
-// ======================================
+// =====================================
+// Get Quote
+// =====================================
+
+async function getQuote(symbol){
+
+    const cacheKey="quote_"+symbol;
+
+    const cached=getCache(cacheKey);
+
+    if(cached){
+
+        return cached;
+
+    }
+
+    try{
+
+        const response=await fetch(
+
+            `${FINNHUB_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+
+        );
+
+        if(!response.ok){
+
+            throw new Error("HTTP "+response.status);
+
+        }
+
+        const data=await response.json();
+
+        if(typeof data.c!=="number"){
+
+            throw new Error("Invalid quote");
+
+        }
+
+        setCache(cacheKey,data);
+
+        await sleep(250);
+
+        return data;
+
+    }catch(error){
+
+        console.error("Quote Error:",symbol,error);
+
+        return null;
+
+    }
+
+}
+// =====================================
+// Get Historical Data
+// =====================================
+
+async function getHistory(symbol, interval = "1day", outputsize = 30){
+
+    const cacheKey = `history_${symbol}_${interval}_${outputsize}`;
+
+    const cached = getCache(cacheKey);
+
+    if(cached){
+
+        return cached;
+
+    }
+
+    try{
+
+        const response = await fetch(
+
+            `${TWELVE_URL}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${TWELVEDATA_API_KEY}`
+
+        );
+
+        if(!response.ok){
+
+            throw new Error("HTTP " + response.status);
+
+        }
+
+        const data = await response.json();
+
+        if(!data.values){
+
+            return [];
+
+        }
+
+        setCache(cacheKey,data.values);
+
+        await sleep(250);
+
+        return data.values;
+
+    }catch(error){
+
+        console.error("History Error:",symbol,error);
+
+        return [];
+
+    }
+
+}
+
+// =====================================
+// Latest Candle
+// =====================================
+
+async function getLatestCandle(symbol){
+
+    const candles = await getHistory(symbol,"1day",1);
+
+    if(candles.length===0){
+
+        return null;
+
+    }
+
+    return candles[0];
+
+}
+
+// =====================================
+// Helpers
+// =====================================
+
+function toNumber(value){
+
+    return Number(value)||0;
+
+}
+
+function average(array){
+
+    if(array.length===0){
+
+        return 0;
+
+    }
+
+    const total=array.reduce((sum,value)=>sum+value,0);
+
+    return total/array.length;
+
+}
+// =====================================
+// Momentum
+// =====================================
+
+function calculateMomentum(history){
+
+    if(!history || history.length < 5){
+
+        return 0;
+
+    }
+
+    const latest = toNumber(history[0].close);
+
+    const previous = toNumber(history[4].close);
+
+    if(previous === 0){
+
+        return 0;
+
+    }
+
+    return ((latest - previous) / previous) * 100;
+
+}
+
+// =====================================
+// Volatility
+// =====================================
+
+function calculateVolatility(history){
+
+    if(!history || history.length < 10){
+
+        return 0;
+
+    }
+
+    const moves = [];
+
+    for(let i=0;i<history.length-1;i++){
+
+        const current = toNumber(history[i].close);
+
+        const previous = toNumber(history[i+1].close);
+
+        if(previous===0){
+
+            continue;
+
+        }
+
+        moves.push(
+
+            Math.abs(
+
+                ((current-previous)/previous)*100
+
+            )
+
+        );
+
+    }
+
+    return average(moves);
+
+}
+
+// =====================================
+// Trading Signal
+// =====================================
+
+function buildSignal(change,momentum){
+
+    if(change>=3 && momentum>=5){
+
+        return{
+
+            text:"Strong Buy",
+
+            className:"strong-buy"
+
+        };
+
+    }
+
+    if(change>=1){
+
+        return{
+
+            text:"Bullish",
+
+            className:"bullish"
+
+        };
+
+    }
+
+    if(change<=-3){
+
+        return{
+
+            text:"Avoid",
+
+            className:"avoid"
+
+        };
+
+    }
+
+    if(change<0){
+
+        return{
+
+            text:"Bearish",
+
+            className:"bearish"
+
+        };
+
+    }
+
+    return{
+
+        text:"Watch",
+
+        className:"watch"
+
+    };
+
+}
+// =====================================
+// Company News
+// =====================================
 
 async function getNews(symbol){
 
@@ -284,20 +366,21 @@ async function getNews(symbol){
 
         const from = new Date();
 
-        from.setDate(today.getDate()-7);
-
-        const toDate = today.toISOString().split("T")[0];
+        from.setDate(today.getDate() - 7);
 
         const fromDate = from.toISOString().split("T")[0];
 
-        const url =
-        `${FINNHUB_BASE}/company-news?symbol=${symbol}&from=${fromDate}&to=${toDate}&token=${FINNHUB_API_KEY}`;
+        const toDate = today.toISOString().split("T")[0];
 
-        const response = await fetch(url);
+        const response = await fetch(
+
+            `${FINNHUB_URL}/company-news?symbol=${symbol}&from=${fromDate}&to=${toDate}&token=${FINNHUB_API_KEY}`
+
+        );
 
         if(!response.ok){
 
-            throw new Error("News request failed");
+            throw new Error("HTTP " + response.status);
 
         }
 
@@ -305,7 +388,7 @@ async function getNews(symbol){
 
         setCache(cacheKey,data);
 
-        await sleep(REQUEST_DELAY);
+        await sleep(250);
 
         return data;
 
@@ -319,17 +402,17 @@ async function getNews(symbol){
 
 }
 
-// ======================================
-// Retry Request
-// ======================================
+// =====================================
+// Retry
+// =====================================
 
-async function retryRequest(requestFunction,retries=3){
+async function retryRequest(request,retries=3){
 
     for(let i=0;i<retries;i++){
 
         try{
 
-            const result = await requestFunction();
+            const result = await request();
 
             if(result){
 
@@ -350,3 +433,9 @@ async function retryRequest(requestFunction,retries=3){
     return null;
 
 }
+
+// =====================================
+// API Ready
+// =====================================
+
+console.log("✅ Scanner Pro X API Loaded");
