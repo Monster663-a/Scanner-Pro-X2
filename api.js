@@ -6,9 +6,9 @@
 // ضع مفاتيح الـ API هنا
 const API = {
 
-    finnhub: "ضع_مفتاح_Finnhub_هنا",
+    finnhub: "d9gj7g1r01qq6536hg2gd9gj7g1r01qq6536hg30",
 
-    twelveData: "ضع_مفتاح_TwelveData_هنا"
+    twelveData: "47ce95d1154741b49acb5803d83dd79f"
 
 };
 
