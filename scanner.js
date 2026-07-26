@@ -1,191 +1,463 @@
+// =====================================
+// Scanner Pro X
+// =====================================
+
 const STOCKS = [
 
-"NVDA","TSLA","AAPL","AMD","META","AMZN",
-"MSFT","GOOGL","NFLX","PLTR","SMCI","AVGO",
-"MU","CRM","ORCL","INTC","QCOM","ARM",
-"CRWD","PANW","SNOW","SHOP","UBER","COIN",
-"RBLX","IONQ","QBTS","RKLB","ASTS","LUNR",
-"TEM","HIMS","SOUN","SOFI","HOOD","CAVA",
-"CELH","RDDT","TTD","APP","NET","DDOG"
+"NVDA",
+"MSFT",
+"AAPL",
+"AMZN",
+"META",
+"TSLA",
+"AMD",
+"PLTR",
+"AVGO",
+"NFLX",
+"GOOGL",
+"ORCL",
+"CRM",
+"CRWD",
+"SNOW",
+"SHOP",
+"UBER",
+"COIN",
+"SMCI",
+"ARM",
+"MU",
+"ANET",
+"PANW",
+"TSM",
+"QCOM",
+"INTC",
+"MRVL",
+"RDDT",
+"HIMS",
+"HOOD",
+"RKLB",
+"ASTS",
+"TOST",
+"APP",
+"IONQ",
+"QBTS",
+"TEM",
+"SOUN",
+"PATH",
+"CAVA",
+"CELH",
+"DDOG"
 
 ];
 
-let scannerData = [];
+// =====================================
+// Helpers
+// =====================================
 
-const runScannerBtn = document.getElementById("runScanner");
+function getScannerFilters(){
 
-if (runScannerBtn) {
+    return{
 
-runScannerBtn.addEventListener("click", async () => {
+        minPrice:Number(document.getElementById("minPrice").value)||0,
 
-const tbody = document.getElementById("scannerResults");
+        maxPrice:Number(document.getElementById("maxPrice").value)||99999,
 
-const minPrice = Number(document.getElementById("minPrice").value);
-const maxPrice = Number(document.getElementById("maxPrice").value);
-const minChange = Number(document.getElementById("minChange").value);
+        minChange:Number(document.getElementById("minChange").value)||0,
 
-const searchSymbol = document
-.getElementById("searchSymbol")
-.value
-.trim()
-.toUpperCase();
+        search:document.getElementById("searchSymbol").value.trim().toUpperCase()
 
-tbody.innerHTML = "";
-
-scannerData = [];
-    for (const symbol of STOCKS) {
-
-if (searchSymbol && symbol !== searchSymbol) {
-continue;
-}
-
-const quote = await getQuote(symbol);
-
-if (!quote) continue;
-
-if (quote.price < minPrice) continue;
-
-if (quote.price > maxPrice) continue;
-
-if (Math.abs(quote.change) < minChange) continue;
-
-scannerData.push({
-
-symbol,
-
-price: quote.price,
-
-change: quote.change
-
-});
+    };
 
 }
-    scannerData.sort((a, b) => b.change - a.change);
+// =====================================
+// Main Scanner
+// =====================================
 
-scannerData.forEach(stock => {
+async function scanStocks(){
 
-tbody.innerHTML += `
-<tr>
-<td>${stock.symbol}</td>
-<td>$${stock.price.toFixed(2)}</td>
-<td>${stock.change.toFixed(2)}%</td>
-<td>${stock.change > 0 ? "🟢 Bullish" : "🔴 Bearish"}</td>
-</tr>
-`;
+    const filters = getScannerFilters();
 
-});
+    const tbody = document.getElementById("scannerBody");
 
-});
+    if(!tbody) return;
 
-}
-// ===============================
-// Hot Stocks
-// ===============================
+    tbody.innerHTML = "";
 
-async function loadHotStocks() {
+    for(const symbol of STOCKS){
 
-    const table = document.getElementById("hotStocksTable");
+        if(filters.search && !symbol.includes(filters.search)){
+            continue;
+        }
 
-    if (!table) return;
+        try{
 
-    table.innerHTML = "";
+            const quote = await getQuote(symbol);
 
-    let hotStocks = [];
+            if(!quote) continue;
 
-    for (const symbol of STOCKS) {
+            const price = Number(quote.c);
+            const change = Number(quote.dp);
 
-        const quote = await getQuote(symbol);
+            if(price < filters.minPrice) continue;
+            if(price > filters.maxPrice) continue;
+            if(change < filters.minChange) continue;
 
-        if (!quote) continue;
+            const entry = price.toFixed(2);
+            const stop = (price * 0.98).toFixed(2);
+            const target = (price * 1.04).toFixed(2);
 
-        hotStocks.push({
-            symbol: symbol,
-            price: quote.price,
-            change: quote.change
-        });
+            let signal = "Watch";
+            let css = "watch";
+
+            if(change >= 3){
+                signal = "Strong Buy";
+                css = "strong-buy";
+            }
+            else if(change >= 1){
+                signal = "Bullish";
+                css = "bullish";
+            }
+            else if(change <= -3){
+                signal = "Avoid";
+                css = "avoid";
+            }
+            else if(change < 0){
+                signal = "Bearish";
+                css = "bearish";
+            }
+
+            tbody.innerHTML += `
+            <tr>
+                <td>${symbol}</td>
+                <td>$${price.toFixed(2)}</td>
+                <td>${change.toFixed(2)}%</td>
+                <td>$${entry}</td>
+                <td>$${stop}</td>
+                <td>$${target}</td>
+                <td class="${css}">${signal}</td>
+            </tr>
+            `;
+
+        }catch(error){
+
+            console.error(symbol,error);
+
+        }
 
     }
 
-    hotStocks.sort((a, b) => b.change - a.change);
+}
 
-    hotStocks = hotStocks.slice(0, 10);
+// =====================================
+// Scan Button
+// =====================================
 
-    hotStocks.forEach(stock => {
+const scanButton = document.getElementById("scanBtn");
 
-        table.innerHTML += `
+if(scanButton){
+
+    scanButton.addEventListener("click", scanStocks);
+
+}
+// =====================================
+// Hot Stocks
+// =====================================
+
+async function loadHotStocks(){
+
+    const tbody = document.getElementById("hotStocksBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+
+    let results = [];
+
+    for(const symbol of STOCKS){
+
+        try{
+
+            const quote = await getQuote(symbol);
+
+            if(!quote) continue;
+
+            results.push({
+
+                symbol,
+
+                price:Number(quote.c),
+
+                change:Number(quote.dp)
+
+            });
+
+        }catch(e){
+
+            console.error(e);
+
+        }
+
+    }
+
+    results.sort((a,b)=>b.change-a.change);
+
+    results.slice(0,10).forEach(stock=>{
+
+        tbody.innerHTML += `
         <tr>
             <td>${stock.symbol}</td>
             <td>$${stock.price.toFixed(2)}</td>
-            <td>${stock.change.toFixed(2)}%</td>
-            <td>🔥 Hot</td>
+            <td class="bullish">${stock.change.toFixed(2)}%</td>
         </tr>
         `;
 
     });
 
 }
-// ===============================
-// Momentum Scanner
-// ===============================
 
-async function loadMomentum() {
+// =====================================
+// Momentum Ranking
+// =====================================
 
-    const table = document.getElementById("momentumTable");
+async function loadMomentum(){
 
-    if (!table) return;
+    const tbody = document.getElementById("momentumBody");
 
-    table.innerHTML = "";
+    if(!tbody) return;
 
-    let momentumData = [];
+    tbody.innerHTML = "";
 
-    for (const symbol of STOCKS) {
+    let ranking = [];
 
-        const quote = await getQuote(symbol);
+    for(const symbol of STOCKS){
 
-        if (!quote) continue;
+        try{
 
-        // حساب مبدئي لقوة الزخم
-        let score = 50;
+            const quote = await getQuote(symbol);
 
-        if (quote.change > 0) {
-            score += Math.min(40, quote.change * 8);
-        } else {
-            score -= Math.min(40, Math.abs(quote.change) * 8);
+            if(!quote) continue;
+
+            const price = Number(quote.c);
+            const change = Number(quote.dp);
+
+            const score = (change * 10);
+
+            ranking.push({
+
+                symbol,
+
+                price,
+
+                change,
+
+                score
+
+            });
+
+        }catch(e){
+
+            console.error(e);
+
         }
-
-        score = Math.max(0, Math.min(100, Math.round(score)));
-
-        let signal = "🔴 Avoid";
-
-        if (score >= 85) {
-            signal = "🟢 Strong Buy";
-        } else if (score >= 70) {
-            signal = "🟡 Watch";
-        }
-
-        momentumData.push({
-            symbol,
-            price: quote.price,
-            change: quote.change,
-            score,
-            signal
-        });
 
     }
 
-    momentumData.sort((a, b) => b.score - a.score);
+    ranking.sort((a,b)=>b.score-a.score);
 
-    momentumData.slice(0, 15).forEach((stock, index) => {
+    ranking.forEach((stock,index)=>{
 
-        table.innerHTML += `
+        const entry = stock.price.toFixed(2);
+        const stop = (stock.price*0.98).toFixed(2);
+        const target = (stock.price*1.04).toFixed(2);
+
+        let signal = "Watch";
+        let css = "watch";
+
+        if(stock.change >= 3){
+
+            signal = "Strong Buy";
+            css = "strong-buy";
+
+        }else if(stock.change >= 1){
+
+            signal = "Bullish";
+            css = "bullish";
+
+        }else if(stock.change < 0){
+
+            signal = "Bearish";
+            css = "bearish";
+
+        }
+
+        tbody.innerHTML += `
         <tr>
-            <td>${index + 1}</td>
+            <td>${index+1}</td>
             <td>${stock.symbol}</td>
-            <td>${stock.score}/100</td>
-            <td>${stock.signal}</td>
+            <td>${stock.score.toFixed(0)}</td>
+            <td>$${entry}</td>
+            <td>$${stop}</td>
+            <td>$${target}</td>
+            <td class="${css}">${signal}</td>
         </tr>
         `;
 
     });
 
 }
+// =====================================
+// Top Gainers
+// =====================================
+
+async function loadGainers(){
+
+    const tbody = document.getElementById("gainersBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+
+    let stocks = [];
+
+    for(const symbol of STOCKS){
+
+        try{
+
+            const quote = await getQuote(symbol);
+
+            if(!quote) continue;
+
+            stocks.push({
+                symbol,
+                price:Number(quote.c),
+                change:Number(quote.dp)
+            });
+
+        }catch(e){
+
+            console.error(e);
+
+        }
+
+    }
+
+    stocks
+        .sort((a,b)=>b.change-a.change)
+        .slice(0,10)
+        .forEach(stock=>{
+
+            tbody.innerHTML += `
+            <tr>
+                <td>${stock.symbol}</td>
+                <td>$${stock.price.toFixed(2)}</td>
+                <td class="bullish">${stock.change.toFixed(2)}%</td>
+            </tr>
+            `;
+
+        });
+
+}
+
+// =====================================
+// Top Losers
+// =====================================
+
+async function loadLosers(){
+
+    const tbody = document.getElementById("losersBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+
+    let stocks = [];
+
+    for(const symbol of STOCKS){
+
+        try{
+
+            const quote = await getQuote(symbol);
+
+            if(!quote) continue;
+
+            stocks.push({
+                symbol,
+                price:Number(quote.c),
+                change:Number(quote.dp)
+            });
+
+        }catch(e){
+
+            console.error(e);
+
+        }
+
+    }
+
+    stocks
+        .sort((a,b)=>a.change-b.change)
+        .slice(0,10)
+        .forEach(stock=>{
+
+            tbody.innerHTML += `
+            <tr>
+                <td>${stock.symbol}</td>
+                <td>$${stock.price.toFixed(2)}</td>
+                <td class="bearish">${stock.change.toFixed(2)}%</td>
+            </tr>
+            `;
+
+        });
+
+}
+
+// =====================================
+// Auto Refresh
+// =====================================
+
+setInterval(()=>{
+
+    if(document.getElementById("scannerPage").style.display==="block"){
+
+        scanStocks();
+
+    }
+
+    if(document.getElementById("hotStocksPage").style.display==="block"){
+
+        loadHotStocks();
+
+    }
+
+    if(document.getElementById("momentumPage").style.display==="block"){
+
+        loadMomentum();
+
+    }
+
+    if(document.getElementById("gainersPage").style.display==="block"){
+
+        loadGainers();
+
+    }
+
+    if(document.getElementById("losersPage").style.display==="block"){
+
+        loadLosers();
+
+    }
+
+},60000);
+
+// =====================================
+// Initial Scan
+// =====================================
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    if(typeof scanStocks==="function"){
+
+        scanStocks();
+
+    }
+
+});
