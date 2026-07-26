@@ -172,3 +172,51 @@ function loadScanner() {
         });
 
 }
+// ======================================
+// الصفحات التي سنكملها لاحقًا
+// ======================================
+
+function loadWatchlist(){
+
+    app.innerHTML = `
+        <h2>⭐ قائمتي</h2>
+        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
+    `;
+
+}
+
+function loadMomentum(){
+
+    app.innerHTML = `
+        <h2>🚀 الزخم</h2>
+        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
+    `;
+
+}
+
+function loadHotStocks(){
+
+    app.innerHTML = `
+        <h2>🔥 الأسهم الساخنة</h2>
+        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
+    `;
+
+}
+
+function loadNews(){
+
+    app.innerHTML = `
+        <h2>📰 الأخبار</h2>
+        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
+    `;
+
+}
+
+function loadSettings(){
+
+    app.innerHTML = `
+        <h2>⚙️ الإعدادات</h2>
+        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
+    `;
+
+}
