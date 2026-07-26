@@ -139,7 +139,7 @@ async function scanStocks(){
 
         const history = await getHistory(symbol,"1day",5);
 
-        const momentum = calculateMomentum(history);
+       const momentum = calculateMomentumScore(quote,history);
 
         const signal = buildSignal(change,momentum);
 
