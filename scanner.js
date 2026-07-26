@@ -15,7 +15,7 @@ const STOCKS = [
 "META",
 "TSLA",
 "AMD",
-"CHOR",
+"COHR",
 "AVGO",
 "SNDK",
 "GOOGL",
