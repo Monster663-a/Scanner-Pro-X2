@@ -1,231 +1,481 @@
-// ======================================
-// Scanner Pro X Ultimate
-// محرك الفحص
-// ======================================
+// =====================================
+// Scanner Pro X v3
+// =====================================
 
-// قائمة الأسهم الافتراضية
+// ================================
+// Stocks List
+// ================================
+
 const STOCKS = [
 
-    "NVDA",
-    "TSLA",
-    "AAPL",
-    "MSFT",
-    "META",
-    "AMZN",
-    "AMD",
-    "AVGO",
-    "PLTR",
-    "NFLX",
-    "GOOGL",
-    "COHR",
-    "WDC",
-    "SNDK",
-    "QCOM",
-    "DELL",
-    "IBM",
-    "AMKR",
-    "FN",
-    "VRT",
-    "ASML",
-    "BE",
-    "AUR"
+"NVDA",
+"MSFT",
+"AAPL",
+"AMZN",
+"META",
+"TSLA",
+"AMD",
+"PLTR",
+"AVGO",
+"NFLX",
+"GOOGL",
+"ORCL",
+"CRM",
+"CRWD",
+"SNOW",
+"SHOP",
+"UBER",
+"COIN",
+"SMCI",
+"ARM",
+"MU",
+"ANET",
+"PANW",
+"TSM",
+"QCOM",
+"INTC",
+"MRVL",
+"RDDT",
+"HIMS",
+"HOOD",
+"RKLB",
+"ASTS",
+"TOST",
+"APP",
+"IONQ",
+"QBTS",
+"TEM",
+"SOUN",
+"PATH",
+"CAVA",
+"CELH",
+"DDOG"
 
 ];
 
-// ======================================
-// بدء الفحص
-// ======================================
+// ================================
+// Filters
+// ================================
+
+function getScannerFilters(){
+
+    return{
+
+        minPrice:Number(document.getElementById("minPrice")?.value)||0,
+
+        maxPrice:Number(document.getElementById("maxPrice")?.value)||999999,
+
+        minChange:Number(document.getElementById("minChange")?.value)||0,
+
+        search:document.getElementById("searchSymbol")?.value
+            .trim()
+            .toUpperCase() || ""
+
+    };
+
+}
+// =====================================
+// Main Scanner
+// =====================================
 
 async function scanStocks(){
 
-    const body = document.getElementById("scannerBody");
-    const progress = document.getElementById("progressBar");
+    const tbody = document.getElementById("scannerBody");
 
-   body.innerHTML = "";
-
-resetScannerStats();
-
-    progress.style.width = "0%";
-    progress.textContent = "0%";
-
-    let completed = 0;
-
-    for(const symbol of STOCKS){
-
-        await scanOneStock(symbol);
-
-        completed++;
-
-        const percent = Math.round(
-            (completed / STOCKS.length) * 100
-        );
-
-        progress.style.width = percent + "%";
-        progress.textContent = percent + "%";
-    }
-
-}
-// ======================================
-// فحص سهم واحد
-// ======================================
-
-async function scanOneStock(symbol){
-
-    const quote = await getQuote(symbol);
-
-    if(!quote){
+    if(!tbody){
 
         return;
 
     }
 
-    const history = await getHistory(symbol);
-
-    const momentum = calculateMomentum(history);
-
-    const avgVolume = averageVolume(history);
-
-    const volumeToday =
-        history.length > 0
-        ? history[history.length-1].volume
-        : 0;
-
-    let rating = "🔴 تجنب";
-    let css = "avoid";
-
-    if(momentum >= 80){
-
-        rating = "🟢 شراء قوي";
-        css = "buyStrong";
-
-    }
-    else if(momentum >= 60){
-
-        rating = "🟢 شراء";
-        css = "buy";
-
-    }
-    else if(momentum >= 40){
-
-        rating = "🟡 مراقبة";
-        css = "watch";
-
-    }
-    else{
-
-        rating = "🟠 انتظر";
-        css = "wait";
-
-    }
-
-    addScannerRow({
-
-        symbol,
-
-        price: quote.price,
-
-        change: quote.change,
-
-        momentum,
-
-        volume: volumeToday,
-
-        averageVolume: avgVolume,
-
-        rating,
-
-        css
-
-    });
-updateScannerStats({
-    momentum
-});
-}
-// ======================================
-// إضافة صف إلى جدول النتائج
-// ======================================
-
-function addScannerRow(stock){
-
-    const body = document.getElementById("scannerBody");
-
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-
-        <td><strong>${stock.symbol}</strong></td>
-
-        <td>$${stock.price.toFixed(2)}</td>
-
-        <td class="${stock.change >= 0 ? 'buyStrong' : 'avoid'}">
-            ${stock.change.toFixed(2)}%
-        </td>
-
-        <td>${stock.momentum}/100</td>
-
-        <td>${formatNumber(stock.volume)}</td>
-
-        <td class="${stock.css}">
-            ${stock.rating}
-        </td>
-
+    tbody.innerHTML = `
+    <tr>
+        <td colspan="7">Scanning stocks...</td>
+    </tr>
     `;
 
-    body.appendChild(row);
+    const filters = getScannerFilters();
 
-}
-// ======================================
-// تحديث إحصائيات لوحة التحكم
-// ======================================
+    const results = [];
 
-let scannerStats = {
-    total: 0,
-    strongBuy: 0,
-    buy: 0,
-    watch: 0
-};
+    for(const symbol of STOCKS){
 
-function updateScannerStats(stock){
+        if(
+            filters.search &&
+            !symbol.includes(filters.search)
+        ){
+            continue;
+        }
 
-    scannerStats.total++;
+        const quote = await getQuote(symbol);
 
-    if(stock.momentum >= 80){
+        if(!quote){
 
-        scannerStats.strongBuy++;
+            continue;
 
-    }else if(stock.momentum >= 60){
+        }
 
-        scannerStats.buy++;
+        const price = Number(quote.c);
 
-    }else if(stock.momentum >= 40){
+        const change = Number(quote.dp);
 
-        scannerStats.watch++;
+        if(price < filters.minPrice){
+
+            continue;
+
+        }
+
+        if(price > filters.maxPrice){
+
+            continue;
+
+        }
+
+        if(change < filters.minChange){
+
+            continue;
+
+        }
+
+        const history = await getHistory(symbol,"1day",5);
+
+        const momentum = calculateMomentum(history);
+
+        const signal = buildSignal(change,momentum);
+
+        results.push({
+
+            symbol,
+
+            price,
+
+            change,
+
+            momentum,
+
+            signal
+
+        });
 
     }
 
-    const stockCount = document.getElementById("stockCount");
-    const strongBuyCount = document.getElementById("strongBuyCount");
-    const buyCount = document.getElementById("buyCount");
-    const watchCount = document.getElementById("watchCount");
+    results.sort((a,b)=>{
 
-    if(stockCount) stockCount.textContent = scannerStats.total;
-    if(strongBuyCount) strongBuyCount.textContent = scannerStats.strongBuy;
-    if(buyCount) buyCount.textContent = scannerStats.buy;
-    if(watchCount) watchCount.textContent = scannerStats.watch;
+        return b.momentum-a.momentum;
+
+    });
+
+    tbody.innerHTML = "";
+
+    results.forEach(stock=>{
+
+        const entry = stock.price;
+
+        const stop = stock.price * 0.98;
+
+        const target = stock.price * 1.04;
+
+        tbody.innerHTML += `
+        <tr>
+
+            <td>${stock.symbol}</td>
+
+            <td>$${stock.price.toFixed(2)}</td>
+
+            <td>${stock.change.toFixed(2)}%</td>
+
+            <td>$${entry.toFixed(2)}</td>
+
+            <td>$${stop.toFixed(2)}</td>
+
+            <td>$${target.toFixed(2)}</td>
+
+            <td class="${stock.signal.className}">
+                ${stock.signal.text}
+            </td>
+
+        </tr>
+        `;
+
+    });
+
+}
+// =====================================
+// Hot Stocks
+// =====================================
+
+async function loadHotStocks(){
+
+    const tbody = document.getElementById("hotStocksBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const stocks = [];
+
+    for(const symbol of STOCKS){
+
+        const quote = await getQuote(symbol);
+
+        if(!quote) continue;
+
+        stocks.push({
+
+            symbol,
+
+            price:Number(quote.c),
+
+            change:Number(quote.dp)
+
+        });
+
+    }
+
+    stocks.sort((a,b)=>b.change-a.change);
+
+    tbody.innerHTML = "";
+
+    stocks.slice(0,10).forEach((stock,index)=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index+1}</td>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td class="bullish">${stock.change.toFixed(2)}%</td>
+        </tr>
+        `;
+
+    });
 
 }
 
-// ======================================
-// إعادة تعيين الإحصائيات
-// ======================================
+// =====================================
+// Momentum Ranking
+// =====================================
 
-function resetScannerStats(){
+async function loadMomentum(){
 
-    scannerStats = {
-        total:0,
-        strongBuy:0,
-        buy:0,
-        watch:0
-    };
+    const tbody=document.getElementById("momentumBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML="<tr><td colspan='7'>Loading...</td></tr>";
+
+    const ranking=[];
+
+    for(const symbol of STOCKS){
+
+        const quote=await getQuote(symbol);
+
+        if(!quote) continue;
+
+        const history=await getHistory(symbol,"1day",5);
+
+        const momentum=calculateMomentum(history);
+
+        const signal=buildSignal(
+
+            Number(quote.dp),
+
+            momentum
+
+        );
+
+        ranking.push({
+
+            symbol,
+
+            price:Number(quote.c),
+
+            score:momentum,
+
+            signal
+
+        });
+
+    }
+
+    ranking.sort((a,b)=>b.score-a.score);
+
+    tbody.innerHTML="";
+
+    ranking.slice(0,20).forEach((stock,index)=>{
+
+        const stop=stock.price*0.98;
+
+        const target=stock.price*1.04;
+
+        tbody.innerHTML+=`
+        <tr>
+
+            <td>${index+1}</td>
+
+            <td>${stock.symbol}</td>
+
+            <td>${stock.score.toFixed(2)}</td>
+
+            <td>$${stock.price.toFixed(2)}</td>
+
+            <td>$${stop.toFixed(2)}</td>
+
+            <td>$${target.toFixed(2)}</td>
+
+            <td class="${stock.signal.className}">
+                ${stock.signal.text}
+            </td>
+
+        </tr>
+        `;
+
+    });
 
 }
+// =====================================
+// Top Gainers
+// =====================================
+
+async function loadGainers(){
+
+    const tbody = document.getElementById("gainersBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const list = [];
+
+    for(const symbol of STOCKS){
+
+        const quote = await getQuote(symbol);
+
+        if(!quote) continue;
+
+        list.push({
+            symbol,
+            price:Number(quote.c),
+            change:Number(quote.dp)
+        });
+
+    }
+
+    list.sort((a,b)=>b.change-a.change);
+
+    tbody.innerHTML = "";
+
+    list.slice(0,20).forEach((stock,index)=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index+1}</td>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td class="bullish">${stock.change.toFixed(2)}%</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+// =====================================
+// Top Losers
+// =====================================
+
+async function loadLosers(){
+
+    const tbody = document.getElementById("losersBody");
+
+    if(!tbody) return;
+
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const list = [];
+
+    for(const symbol of STOCKS){
+
+        const quote = await getQuote(symbol);
+
+        if(!quote) continue;
+
+        list.push({
+            symbol,
+            price:Number(quote.c),
+            change:Number(quote.dp)
+        });
+
+    }
+
+    list.sort((a,b)=>a.change-b.change);
+
+    tbody.innerHTML = "";
+
+    list.slice(0,20).forEach((stock,index)=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index+1}</td>
+            <td>${stock.symbol}</td>
+            <td>$${stock.price.toFixed(2)}</td>
+            <td class="bearish">${stock.change.toFixed(2)}%</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+// =====================================
+// Scanner Button
+// =====================================
+
+const scanButton = document.getElementById("scanBtn");
+
+if(scanButton){
+
+    scanButton.addEventListener("click",scanStocks);
+
+}
+
+// =====================================
+// Auto Refresh Scanner Pages
+// =====================================
+
+setInterval(()=>{
+
+    const page = document.querySelector(".page.active");
+
+    if(!page) return;
+
+    switch(page.id){
+
+        case "scannerPage":
+            scanStocks();
+            break;
+
+        case "hotStocksPage":
+            loadHotStocks();
+            break;
+
+        case "momentumPage":
+            loadMomentum();
+            break;
+
+        case "gainersPage":
+            loadGainers();
+            break;
+
+        case "losersPage":
+            loadLosers();
+            break;
+
+        case "newsPage":
+            loadNews();
+            break;
+
+    }
+
+},60000);
+
+console.log("✅ Scanner Pro X v3 Loaded");
