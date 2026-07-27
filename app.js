@@ -1,222 +1,467 @@
-// ======================================
-// Scanner Pro X Ultimate
-// App
-// ======================================
+// =====================================
+// Scanner Pro X v3
+// =====================================
 
-const app = document.getElementById("mainContent");
+// ================================
+// Watchlist
+// ================================
 
-// ======================================
-// بدء التطبيق
-// ======================================
+const WATCHLIST = [
 
-document.addEventListener("DOMContentLoaded", () => {
+    "NVDA",
+    "AAPL",
+    "MSFT",
+    "TSLA",
+    "AMD",
+    "META"
 
-    loadDashboard();
+];
 
-    bindMenu();
+// ================================
+// Pages
+// ================================
+
+const pages = {
+
+    dashboard: document.getElementById("dashboardPage"),
+    scanner: document.getElementById("scannerPage"),
+    hotStocks: document.getElementById("hotStocksPage"),
+    momentum: document.getElementById("momentumPage"),
+    gainers: document.getElementById("gainersPage"),
+    losers: document.getElementById("losersPage"),
+    news: document.getElementById("newsPage"),
+    risk: document.getElementById("riskPage"),
+    settings: document.getElementById("settingsPage")
+
+};
+
+// ================================
+// Menu Buttons
+// ================================
+
+const menu = {
+
+    dashboard: document.getElementById("dashboardMenu"),
+    scanner: document.getElementById("scannerMenu"),
+    hotStocks: document.getElementById("hotStocksMenu"),
+    momentum: document.getElementById("momentumMenu"),
+    gainers: document.getElementById("gainersMenu"),
+    losers: document.getElementById("losersMenu"),
+    news: document.getElementById("newsMenu"),
+    risk: document.getElementById("riskMenu"),
+    settings: document.getElementById("settingsMenu")
+
+};
+
+// ================================
+// DOM Ready
+// ================================
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    initNavigation();
+
+    buildWatchlist();
+
+    updateMarketStatus();
+
+    updateWatchlist();
 
 });
+// =====================================
+// Navigation
+// =====================================
 
-// ======================================
-// ربط أزرار القائمة
-// ======================================
+function hideAllPages(){
 
-function bindMenu(){
+    Object.values(pages).forEach(page=>{
 
-    document.getElementById("dashboardMenu")
-        .onclick = loadDashboard;
+        if(page){
 
-    document.getElementById("scannerMenu")
-        .onclick = loadScanner;
+            page.style.display="none";
 
-    document.getElementById("watchlistMenu")
-        .onclick = loadWatchlist;
+        }
 
-    document.getElementById("momentumMenu")
-        .onclick = loadMomentum;
-
-    document.getElementById("hotStocksMenu")
-        .onclick = loadHotStocks;
-
-    document.getElementById("newsMenu")
-        .onclick = loadNews;
-
-    document.getElementById("settingsMenu")
-        .onclick = loadSettings;
+    });
 
 }
-// ======================================
-// لوحة التحكم
-// ======================================
 
-function loadDashboard() {
+function clearActiveMenu(){
 
-    app.innerHTML = `
+    Object.values(menu).forEach(item=>{
 
-    <h2>🏠 لوحة التحكم</h2>
+        if(item){
 
-    <br>
+            item.classList.remove("active");
 
-    <div class="cards">
+        }
 
-        <div class="card">
-            <h3>عدد الأسهم</h3>
-            <div class="value" id="stockCount">0</div>
-        </div>
-
-        <div class="card">
-            <h3>شراء قوي</h3>
-            <div class="value" id="strongBuyCount">0</div>
-        </div>
-
-        <div class="card">
-            <h3>شراء</h3>
-            <div class="value" id="buyCount">0</div>
-        </div>
-
-        <div class="card">
-            <h3>مراقبة</h3>
-            <div class="value" id="watchCount">0</div>
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>
-
-        مرحبًا بك في Scanner Pro X Ultimate
-
-        </h3>
-
-        <br>
-
-        <p>
-
-        اختر من القائمة الجانبية لبدء فحص الأسهم الأمريكية وتحليلها.
-
-        </p>
-
-    </div>
-
-    `;
+    });
 
 }
-// ======================================
-// صفحة فاحص الأسهم
-// ======================================
 
-function loadScanner() {
+function showPage(pageName){
 
-    app.innerHTML = `
+    hideAllPages();
 
-    <h2>🔍 فاحص الأسهم</h2>
+    clearActiveMenu();
 
-    <br>
+    if(pages[pageName]){
 
-    <button id="startScan" class="scanButton">
+        pages[pageName].style.display="block";
 
-        ▶️ بدء الفحص
+    }
 
-    </button>
+    if(menu[pageName]){
 
-    <div class="progress">
+        menu[pageName].classList.add("active");
 
-        <div class="progress-bar" id="progressBar">
+    }
 
-            0%
+    switch(pageName){
 
-        </div>
+        case "hotStocks":
 
-    </div>
+            if(typeof loadHotStocks==="function"){
 
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>السهم</th>
-                <th>السعر</th>
-                <th>التغير %</th>
-                <th>الزخم</th>
-                <th>الحجم</th>
-                <th>التقييم</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody id="scannerBody">
-
-        </tbody>
-
-    </table>
-
-    `;
-
-    document
-        .getElementById("startScan")
-        .addEventListener("click", () => {
-
-            if (typeof scanStocks === "function") {
-
-                scanStocks();
-
-            } else {
-
-                alert("ملف scanner.js غير جاهز بعد.");
+                loadHotStocks();
 
             }
 
-        });
+        break;
+
+        case "momentum":
+
+            if(typeof loadMomentum==="function"){
+
+                loadMomentum();
+
+            }
+
+        break;
+
+        case "gainers":
+
+            if(typeof loadGainers==="function"){
+
+                loadGainers();
+
+            }
+
+        break;
+
+        case "losers":
+
+            if(typeof loadLosers==="function"){
+
+                loadLosers();
+
+            }
+
+        break;
+
+        case "news":
+
+            if(typeof loadNews==="function"){
+
+                loadNews();
+
+            }
+
+        break;
+
+    }
 
 }
-// ======================================
-// الصفحات التي سنكملها لاحقًا
-// ======================================
 
-function loadWatchlist(){
+function initNavigation(){
 
-    app.innerHTML = `
-        <h2>⭐ قائمتي</h2>
-        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
-    `;
+    menu.dashboard.onclick=()=>showPage("dashboard");
+
+    menu.scanner.onclick=()=>showPage("scanner");
+
+    menu.hotStocks.onclick=()=>showPage("hotStocks");
+
+    menu.momentum.onclick=()=>showPage("momentum");
+
+    menu.gainers.onclick=()=>showPage("gainers");
+
+    menu.losers.onclick=()=>showPage("losers");
+
+    menu.news.onclick=()=>showPage("news");
+
+    menu.risk.onclick=()=>showPage("risk");
+
+    menu.settings.onclick=()=>showPage("settings");
+
+    showPage("dashboard");
+
+}
+// =====================================
+// Dashboard
+// =====================================
+
+function buildWatchlist(){
+
+    const tbody = document.getElementById("watchlistBody");
+
+    if(!tbody){
+
+        return;
+
+    }
+
+    tbody.innerHTML = "";
+
+    WATCHLIST.forEach(symbol=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${symbol}</td>
+            <td id="${symbol}_price">--</td>
+            <td id="${symbol}_change">--</td>
+            <td id="${symbol}_signal" class="watch">Loading...</td>
+        </tr>
+        `;
+
+    });
 
 }
 
-function loadMomentum(){
+// =====================================
+// Update Watchlist
+// =====================================
 
-    app.innerHTML = `
-        <h2>🚀 الزخم</h2>
-        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
-    `;
+async function updateWatchlist(){
+
+    for(const symbol of WATCHLIST){
+
+        const quote = await getQuote(symbol);
+
+        if(!quote){
+
+            continue;
+
+        }
+
+        const price = Number(quote.c);
+
+        const change = Number(quote.dp);
+
+        const history = await getHistory(symbol,"1day",5);
+
+        const momentum = calculateMomentum(history);
+
+        const signal = buildSignal(change,momentum);
+
+        document.getElementById(symbol+"_price").textContent =
+            "$" + price.toFixed(2);
+
+        document.getElementById(symbol+"_change").textContent =
+            change.toFixed(2) + "%";
+
+        const signalCell = document.getElementById(symbol+"_signal");
+
+        signalCell.textContent = signal.text;
+
+        signalCell.className = signal.className;
+
+    }
 
 }
 
-function loadHotStocks(){
+// =====================================
+// Market Status
+// =====================================
 
-    app.innerHTML = `
-        <h2>🔥 الأسهم الساخنة</h2>
-        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
-    `;
+function updateMarketStatus(){
+
+    const status = document.getElementById("marketStatus");
+
+    if(!status){
+
+        return;
+
+    }
+
+    const now = new Date();
+
+    const hour = now.getUTCHours();
+
+    if(hour >= 13 && hour < 20){
+
+        status.textContent = "🟢 US Market Open";
+
+    }else{
+
+        status.textContent = "🔴 US Market Closed";
+
+    }
+
+}
+// =====================================
+// Position Size Calculator
+// =====================================
+
+function calculatePositionSize(){
+
+    const account = Number(document.getElementById("accountSize").value);
+
+    const riskPercent = Number(document.getElementById("riskPercent").value);
+
+    const entry = Number(document.getElementById("entryPrice").value);
+
+    const stop = Number(document.getElementById("stopPrice").value);
+
+    if(
+        !account ||
+        !riskPercent ||
+        !entry ||
+        !stop ||
+        entry === stop
+    ){
+        return;
+    }
+
+    const maxRisk = account * (riskPercent / 100);
+
+    const riskPerShare = Math.abs(entry - stop);
+
+    const shares = Math.floor(maxRisk / riskPerShare);
+
+    document.getElementById("maxRisk").textContent =
+        "$" + maxRisk.toFixed(2);
+
+    document.getElementById("shareSize").textContent =
+        shares.toLocaleString();
 
 }
 
-function loadNews(){
+// =====================================
+// Buttons
+// =====================================
 
-    app.innerHTML = `
-        <h2>📰 الأخبار</h2>
-        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
-    `;
+const riskButton = document.getElementById("calculateRisk");
+
+if(riskButton){
+
+    riskButton.addEventListener("click",calculatePositionSize);
+
+}
+
+const refreshButton = document.getElementById("refreshDashboard");
+
+if(refreshButton){
+
+    refreshButton.addEventListener("click",async()=>{
+
+        await updateWatchlist();
+
+    });
 
 }
 
-function loadSettings(){
+// =====================================
+// Dashboard Cards
+// =====================================
 
-    app.innerHTML = `
-        <h2>⚙️ الإعدادات</h2>
-        <p>سيتم تطوير هذه الصفحة قريبًا.</p>
-    `;
+function updateDashboardCards(){
+
+    document.getElementById("stocksScanned").textContent =
+        WATCHLIST.length;
+
+    document.getElementById("marketTrend").textContent =
+        "Live";
+
+    document.getElementById("hotStocksCount").textContent =
+        "--";
+
+    document.getElementById("momentumCount").textContent =
+        "--";
 
 }
+
+// =====================================
+// Auto Refresh
+// =====================================
+
+setInterval(async()=>{
+
+    await updateWatchlist();
+
+    updateDashboardCards();
+
+},60000);
+
+updateDashboardCards();
+// =====================================
+// News
+// =====================================
+
+async function loadNews(){
+
+    const tbody = document.getElementById("newsBody");
+
+    if(!tbody){
+
+        return;
+
+    }
+
+    tbody.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    const news = await getNews("AAPL");
+
+    tbody.innerHTML = "";
+
+    if(!news || news.length===0){
+
+        tbody.innerHTML =
+        "<tr><td colspan='4'>No news found.</td></tr>";
+
+        return;
+
+    }
+
+    news.slice(0,10).forEach(item=>{
+
+        const date = new Date(item.datetime * 1000);
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${date.toLocaleDateString()}</td>
+            <td>AAPL</td>
+            <td>${item.headline}</td>
+            <td>${item.source}</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+// =====================================
+// Refresh News Button
+// =====================================
+
+const refreshNewsButton = document.getElementById("refreshNews");
+
+if(refreshNewsButton){
+
+    refreshNewsButton.addEventListener("click",loadNews);
+
+}
+
+// =====================================
+// Startup
+// =====================================
+
+window.addEventListener("load",()=>{
+
+    updateDashboardCards();
+
+    updateMarketStatus();
+
+    updateWatchlist();
+
+});
