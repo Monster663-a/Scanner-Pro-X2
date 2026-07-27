@@ -1,192 +1,612 @@
+/* =====================================
+   Scanner Pro X v3
+===================================== */
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:'Cairo',sans-serif;
+}
+
+html{
+    scroll-behavior:smooth;
 }
 
 body{
-    background:#0f172a;
-    color:#fff;
-    direction:rtl;
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    background:#0b1120;
+
+    color:#f8fafc;
+
 }
+
+/* ===============================
+   Layout
+=============================== */
 
 #app{
+
     display:flex;
+
     min-height:100vh;
+
 }
 
+/* ===============================
+   Sidebar
+=============================== */
+
 .sidebar{
+
     width:260px;
+
     background:#111827;
-    border-left:1px solid #1f2937;
-    padding:25px;
+
+    border-right:1px solid #253047;
+
+    padding:24px;
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    bottom:0;
+
+    overflow-y:auto;
+
 }
 
 .logo{
-    margin-bottom:35px;
+
     text-align:center;
+
+    margin-bottom:35px;
+
 }
 
 .logo h1{
-    font-size:28px;
-    color:#38bdf8;
+
+    color:#22c55e;
+
+    font-size:30px;
+
 }
 
 .logo p{
+
     color:#94a3b8;
-    margin-top:8px;
-    font-size:14px;
+
+    margin-top:6px;
+
+    font-size:13px;
+
 }
+
+/* ===============================
+   Menu
+=============================== */
 
 .sidebar nav{
+
     display:flex;
+
     flex-direction:column;
-    gap:12px;
+
+    gap:10px;
+
 }
 
-.sidebar button{
-    background:#1e293b;
-    color:white;
-    border:none;
-    padding:14px;
+.sidebar nav a{
+
+    color:#cbd5e1;
+
+    text-decoration:none;
+
+    padding:14px 16px;
+
     border-radius:10px;
-    cursor:pointer;
-    font-size:16px;
+
     transition:.25s;
-    text-align:right;
+
+    font-weight:600;
+
 }
 
-.sidebar button:hover{
-    background:#2563eb;
+.sidebar nav a:hover{
+
+    background:#1f2937;
+
+    color:#22c55e;
+
 }
 
-#mainContent{
-    flex:1;
-    padding:30px;
-    overflow:auto;
+.sidebar nav a.active{
+
+    background:#22c55e;
+
+    color:#000;
+
 }
-/* ===== بطاقات لوحة التحكم ===== */
+/* ===============================
+   Content
+=============================== */
+
+.content{
+
+    margin-left:260px;
+
+    width:calc(100% - 260px);
+
+    padding:35px;
+
+}
+
+/* ===============================
+   Top Bar
+=============================== */
+
+.topbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.topbar h2{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+}
+
+.topbar p{
+
+    color:#94a3b8;
+
+    margin-top:5px;
+
+}
+
+/* ===============================
+   Buttons
+=============================== */
+
+button{
+
+    background:#22c55e;
+
+    color:#000;
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:10px;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+button:hover{
+
+    background:#16a34a;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===============================
+   Cards
+=============================== */
 
 .cards{
+
     display:grid;
+
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
     gap:20px;
+
     margin-bottom:30px;
+
 }
 
 .card{
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:14px;
-    padding:20px;
-    transition:.25s;
-}
 
-.card:hover{
-    transform:translateY(-4px);
+    background:#161b22;
+
+    border:1px solid #2b3137;
+
+    border-radius:14px;
+
+    padding:22px;
+
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+
 }
 
 .card h3{
-    color:#cbd5e1;
-    font-size:16px;
-    margin-bottom:10px;
+
+    color:#22c55e;
+
+    margin-bottom:12px;
+
 }
 
-.card .value{
-    font-size:30px;
+.card span{
+
+    font-size:26px;
+
     font-weight:bold;
-    color:#38bdf8;
+
 }
 
-/* ===== الجداول ===== */
+.card p{
+
+    color:#cbd5e1;
+
+    line-height:1.6;
+
+}
+/* ===============================
+   Filters
+=============================== */
+
+.filters{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:20px;
+
+    margin-bottom:25px;
+
+}
+
+.filters label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#cbd5e1;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+}
+
+.filters input{
+
+    width:100%;
+
+    padding:12px;
+
+    background:#0f172a;
+
+    border:1px solid #334155;
+
+    border-radius:10px;
+
+    color:#fff;
+
+    font-size:15px;
+
+    transition:.25s;
+
+}
+
+.filters input:focus{
+
+    outline:none;
+
+    border-color:#22c55e;
+
+    box-shadow:0 0 8px rgba(34,197,94,.3);
+
+}
+
+/* ===============================
+   Tables
+=============================== */
+
+.table-box{
+
+    background:#161b22;
+
+    border:1px solid #2b3137;
+
+    border-radius:14px;
+
+    overflow-x:auto;
+
+}
 
 table{
+
     width:100%;
+
     border-collapse:collapse;
-    background:#1e293b;
-    border-radius:12px;
-    overflow:hidden;
+
+}
+
+thead{
+
+    background:#1f2937;
+
 }
 
 th{
-    background:#2563eb;
-    color:white;
-    padding:14px;
+
+    padding:16px;
+
+    text-align:left;
+
+    color:#22c55e;
+
     font-size:15px;
+
+    white-space:nowrap;
+
 }
 
 td{
-    padding:12px;
-    text-align:center;
-    border-bottom:1px solid #334155;
+
+    padding:16px;
+
+    border-top:1px solid #293548;
+
+    white-space:nowrap;
+
 }
 
-tr:hover{
-    background:#293548;
+tbody tr{
+
+    transition:.2s;
+
 }
 
-/* ===== شريط التقدم ===== */
+tbody tr:hover{
 
-.progress{
-    width:100%;
-    height:22px;
-    background:#334155;
-    border-radius:20px;
-    overflow:hidden;
-    margin:20px 0;
+    background:#1b2432;
+
 }
 
-.progress-bar{
-    width:0%;
-    height:100%;
-    background:#22c55e;
-    color:white;
-    font-size:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:width .3s;
-}
+/* ===============================
+   Signals
+=============================== */
 
-/* ===== ألوان التقييم ===== */
+.strong-buy{
 
-.buyStrong{
     color:#22c55e;
+
     font-weight:bold;
+
 }
 
-.buy{
+.bullish{
+
     color:#4ade80;
+
     font-weight:bold;
+
 }
 
 .watch{
+
     color:#facc15;
+
     font-weight:bold;
+
 }
 
-.wait{
+.bearish{
+
     color:#fb923c;
+
     font-weight:bold;
+
 }
 
 .avoid{
+
     color:#ef4444;
+
     font-weight:bold;
+
 }
-.scanButton{
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:14px 26px;
-    border-radius:10px;
-    cursor:pointer;
-    font-size:16px;
-    margin-bottom:20px;
-    transition:.25s;
+/* ===============================
+   Scrollbar
+=============================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+    height:10px;
+
 }
 
-.scanButton:hover{
-    background:#1d4ed8;
+::-webkit-scrollbar-track{
+
+    background:#0b1120;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#475569;
+
+}
+
+/* ===============================
+   Responsive
+=============================== */
+
+@media(max-width:1100px){
+
+    .sidebar{
+
+        width:220px;
+
+    }
+
+    .content{
+
+        margin-left:220px;
+
+        width:calc(100% - 220px);
+
+    }
+
+}
+
+@media(max-width:900px){
+
+    #app{
+
+        display:block;
+
+    }
+
+    .sidebar{
+
+        position:relative;
+
+        width:100%;
+
+        height:auto;
+
+        border-right:none;
+
+        border-bottom:1px solid #253047;
+
+    }
+
+    .content{
+
+        margin-left:0;
+
+        width:100%;
+
+        padding:20px;
+
+    }
+
+    .topbar{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .cards{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .filters{
+
+        grid-template-columns:1fr;
+
+    }
+
+    button{
+
+        width:100%;
+
+    }
+
+}
+
+@media(max-width:600px){
+
+    h1{
+
+        font-size:24px;
+
+    }
+
+    .topbar h2{
+
+        font-size:24px;
+
+    }
+
+    th,
+
+    td{
+
+        padding:12px;
+
+        font-size:13px;
+
+    }
+
+}
+
+/* ===============================
+   Animation
+=============================== */
+
+.card{
+
+    animation:fadeIn .4s ease;
+
+}
+
+.table-box{
+
+    animation:fadeIn .4s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
 }
