@@ -1,50 +1,49 @@
-// ======================================
-// Scanner Pro X Ultimate
-// API Configuration
-// ======================================
+// =====================================
+// Scanner Pro X v3 API
+// =====================================
 
-// ضع مفاتيح الـ API هنا
-const API = {
+// ---------- API Keys ----------
 
-    finnhub: "d9gj7g1r01qq6536hg2gd9gj7g1r01qq6536hg30",
+const FINNHUB_API_KEY = "d9gj7g1r01qq6536hg2gd9gj7g1r01qq6536hg30";
 
-    twelveData: "47ce95d1154741b49acb5803d83dd79f"
+const TWELVEDATA_API_KEY = "47ce95d1154741b49acb5803d83dd79f";
 
-};
+// ---------- API URLs ----------
 
-// ======================================
-// إعدادات عامة
-// ======================================
+const FINNHUB_URL = "https://finnhub.io/api/v1";
 
-const REQUEST_DELAY = 600;
+const TWELVE_URL = "https://api.twelvedata.com";
+
+// ---------- Cache ----------
+
+const cache = {};
 
 const CACHE_TIME = 60000;
 
-const cache = new Map();
-
-// ======================================
-// انتظار بين الطلبات
-// ======================================
+// ---------- Sleep ----------
 
 function sleep(ms){
 
     return new Promise(resolve=>setTimeout(resolve,ms));
 
 }
-
-// ======================================
-// قراءة من الكاش
-// ======================================
+// =====================================
+// Cache Functions
+// =====================================
 
 function getCache(key){
 
-    const item = cache.get(key);
+    const item = cache[key];
 
-    if(!item) return null;
+    if(!item){
 
-    if(Date.now()-item.time>CACHE_TIME){
+        return null;
 
-        cache.delete(key);
+    }
+
+    if(Date.now() - item.time > CACHE_TIME){
+
+        delete cache[key];
 
         return null;
 
@@ -54,40 +53,92 @@ function getCache(key){
 
 }
 
-// ======================================
-// حفظ داخل الكاش
-// ======================================
+function setCache(key,data){
 
-function saveCache(key,data){
+    cache[key]={
 
-    cache.set(key,{
+        data:data,
 
-        time:Date.now(),
+        time:Date.now()
 
-        data
-
-    });
+    };
 
 }
-// ======================================
-// جلب سعر السهم الحالي
-// ======================================
+
+// =====================================
+// Get Quote
+// =====================================
 
 async function getQuote(symbol){
 
-    const key = "quote_" + symbol;
+    const cacheKey="quote_"+symbol;
 
-    const cached = getCache(key);
+    const cached=getCache(cacheKey);
 
-    if(cached) return cached;
+    if(cached){
 
-    await sleep(REQUEST_DELAY);
+        return cached;
+
+    }
+
+    try{
+
+        const response=await fetch(
+
+            `${FINNHUB_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+
+        );
+
+        if(!response.ok){
+
+            throw new Error("HTTP "+response.status);
+
+        }
+
+        const data=await response.json();
+
+        if(typeof data.c!=="number"){
+
+            throw new Error("Invalid quote");
+
+        }
+
+        setCache(cacheKey,data);
+
+        await sleep(250);
+
+        return data;
+
+    }catch(error){
+
+        console.error("Quote Error:",symbol,error);
+
+        return null;
+
+    }
+
+}
+// =====================================
+// Get Historical Data
+// =====================================
+
+async function getHistory(symbol, interval = "1day", outputsize = 30){
+
+    const cacheKey = `history_${symbol}_${interval}_${outputsize}`;
+
+    const cached = getCache(cacheKey);
+
+    if(cached){
+
+        return cached;
+
+    }
 
     try{
 
         const response = await fetch(
 
-            `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API.finnhub}`
+            `${TWELVE_URL}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${TWELVEDATA_API_KEY}`
 
         );
 
@@ -99,192 +150,292 @@ async function getQuote(symbol){
 
         const data = await response.json();
 
-        const quote = {
+        if(!data.values){
 
-            symbol,
-
-            price: Number(data.c || 0),
-
-            change: Number(data.dp || 0),
-
-            high: Number(data.h || 0),
-
-            low: Number(data.l || 0),
-
-            open: Number(data.o || 0),
-
-            previousClose: Number(data.pc || 0)
-
-        };
-
-        saveCache(key, quote);
-
-        return quote;
-
-    }
-
-    catch(error){
-
-        console.error("Quote Error:", symbol, error);
-
-        return null;
-
-    }
-
-}
-// ======================================
-// جلب البيانات التاريخية
-// ======================================
-
-async function getHistory(symbol) {
-
-    const key = "history_" + symbol;
-
-    const cached = getCache(key);
-
-    if (cached) return cached;
-
-    await sleep(REQUEST_DELAY);
-
-    try {
-
-        const url =
-            `https://api.twelvedata.com/time_series?` +
-            `symbol=${symbol}` +
-            `&interval=1day` +
-            `&outputsize=30` +
-            `&apikey=${API.twelveData}`;
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-        }
-
-        const data = await response.json();
-
-        if (!data.values) {
-            console.warn("لا توجد بيانات تاريخية:", symbol);
             return [];
+
         }
 
-        const history = data.values.reverse().map(item => ({
-            date: item.datetime,
-            open: Number(item.open),
-            high: Number(item.high),
-            low: Number(item.low),
-            close: Number(item.close),
-            volume: Number(item.volume)
-        }));
+        setCache(cacheKey,data.values);
 
-        saveCache(key, history);
+        await sleep(250);
 
-        return history;
+        return data.values;
 
-    } catch (error) {
+    }catch(error){
 
-        console.error("History Error:", symbol, error);
+        console.error("History Error:",symbol,error);
 
         return [];
 
     }
 
 }
-// ======================================
-// حساب قوة الزخم
-// ======================================
+
+// =====================================
+// Latest Candle
+// =====================================
+
+async function getLatestCandle(symbol){
+
+    const candles = await getHistory(symbol,"1day",1);
+
+    if(candles.length===0){
+
+        return null;
+
+    }
+
+    return candles[0];
+
+}
+
+// =====================================
+// Helpers
+// =====================================
+
+function toNumber(value){
+
+    return Number(value)||0;
+
+}
+
+function average(array){
+
+    if(array.length===0){
+
+        return 0;
+
+    }
+
+    const total=array.reduce((sum,value)=>sum+value,0);
+
+    return total/array.length;
+
+}
+// =====================================
+// Momentum
+// =====================================
 
 function calculateMomentum(history){
 
-    if(!history || history.length < 20){
+    if(!history || history.length < 5){
 
         return 0;
 
     }
 
-    const last = history[history.length-1].close;
+    const latest = toNumber(history[0].close);
 
-    const ma10 = average(
-        history.slice(-10).map(c=>c.close)
-    );
+    const previous = toNumber(history[4].close);
 
-    const ma20 = average(
-        history.slice(-20).map(c=>c.close)
-    );
-
-    let score = 0;
-
-    if(last > ma10) score += 40;
-
-    if(ma10 > ma20) score += 40;
-
-    const gain =
-        ((last-history[0].close)/history[0].close)*100;
-
-    if(gain > 0){
-
-        score += Math.min(20,gain);
-
-    }
-
-    return Math.round(Math.min(score,100));
-
-}
-
-// ======================================
-// متوسط حجم التداول
-// ======================================
-
-function averageVolume(history){
-
-    if(!history || history.length===0){
+    if(previous === 0){
 
         return 0;
 
     }
 
-    return Math.round(
-
-        average(
-
-            history.map(c=>c.volume)
-
-        )
-
-    );
+    return ((latest - previous) / previous) * 100;
 
 }
 
-// ======================================
-// حساب المتوسط
-// ======================================
+// =====================================
+// Volatility
+// =====================================
 
-function average(values){
+function calculateVolatility(history){
 
-    if(values.length===0){
+    if(!history || history.length < 10){
 
         return 0;
 
     }
 
-    return values.reduce(
+    const moves = [];
 
-        (a,b)=>a+b,0
+    for(let i=0;i<history.length-1;i++){
 
-    )/values.length;
+        const current = toNumber(history[i].close);
+
+        const previous = toNumber(history[i+1].close);
+
+        if(previous===0){
+
+            continue;
+
+        }
+
+        moves.push(
+
+            Math.abs(
+
+                ((current-previous)/previous)*100
+
+            )
+
+        );
+
+    }
+
+    return average(moves);
 
 }
 
-// ======================================
-// تنسيق الأرقام
-// ======================================
+// =====================================
+// Trading Signal
+// =====================================
 
-function formatNumber(number){
+function buildSignal(change,momentum){
 
-    return new Intl.NumberFormat("en-US").format(
+    if(change>=3 && momentum>=5){
 
-        Math.round(number)
+        return{
 
-    );
+            text:"Strong Buy",
+
+            className:"strong-buy"
+
+        };
+
+    }
+
+    if(change>=1){
+
+        return{
+
+            text:"Bullish",
+
+            className:"bullish"
+
+        };
+
+    }
+
+    if(change<=-3){
+
+        return{
+
+            text:"Avoid",
+
+            className:"avoid"
+
+        };
+
+    }
+
+    if(change<0){
+
+        return{
+
+            text:"Bearish",
+
+            className:"bearish"
+
+        };
+
+    }
+
+    return{
+
+        text:"Watch",
+
+        className:"watch"
+
+    };
 
 }
+// =====================================
+// Company News
+// =====================================
+
+async function getNews(symbol){
+
+    const cacheKey = "news_" + symbol;
+
+    const cached = getCache(cacheKey);
+
+    if(cached){
+
+        return cached;
+
+    }
+
+    try{
+
+        const today = new Date();
+
+        const from = new Date();
+
+        from.setDate(today.getDate() - 7);
+
+        const fromDate = from.toISOString().split("T")[0];
+
+        const toDate = today.toISOString().split("T")[0];
+
+        const response = await fetch(
+
+            `${FINNHUB_URL}/company-news?symbol=${symbol}&from=${fromDate}&to=${toDate}&token=${FINNHUB_API_KEY}`
+
+        );
+
+        if(!response.ok){
+
+            throw new Error("HTTP " + response.status);
+
+        }
+
+        const data = await response.json();
+
+        setCache(cacheKey,data);
+
+        await sleep(250);
+
+        return data;
+
+    }catch(error){
+
+        console.error("News Error:",symbol,error);
+
+        return [];
+
+    }
+
+}
+
+// =====================================
+// Retry
+// =====================================
+
+async function retryRequest(request,retries=3){
+
+    for(let i=0;i<retries;i++){
+
+        try{
+
+            const result = await request();
+
+            if(result){
+
+                return result;
+
+            }
+
+        }catch(error){
+
+            console.error("Retry",i+1,error);
+
+        }
+
+        await sleep(1000);
+
+    }
+
+    return null;
+
+}
+
+// =====================================
+// API Ready
+// =====================================
+
+console.log("✅ Scanner Pro X API Loaded");
